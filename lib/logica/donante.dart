@@ -29,7 +29,7 @@ class Donante {
 
   //Actualizar el estado de elegibilidad del donante
   bool actualizarElegibilidad(EstadoElegibilidad nuevoEstado) {
-    if (_elegibilidad == EstadoElegibilidad.noAptoPermanente) {
+    if (_elegibilidad == EstadoElegibilidad.noAptoPermanentemente) {
       return false; // No se puede modificar un rechazo permanente
     }
     _elegibilidad = nuevoEstado;

@@ -1,5 +1,5 @@
 enum EstadoElegibilidad {
   apto,
-  noAptoTemporal,
-  noAptoPermanente,
+  noAptoTemporalmente,
+  noAptoPermanentemente,
 }

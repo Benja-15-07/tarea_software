@@ -22,8 +22,9 @@ class RegistroDonantes {
 
   //Busca un donante, retorna null si no existe.
   Donante? buscarPorRut(String rut) {
-    return _donantes[rut.trim()];
-  }
+  final rutNormalizado = validarYNormalizarRut(rut);
+  return _donantes[rutNormalizado];
+}
 
   //Verifica un rut en sistema.
   bool existeDonante(String rut) {

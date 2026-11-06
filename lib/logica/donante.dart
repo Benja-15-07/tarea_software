@@ -12,14 +12,15 @@ class Donante {
   EstadoElegibilidad _elegibilidad;
 
   Donante({
-    required this.rut,
+    required String rut,
     required this.nombre,
     required this.fechaNacimiento,
     required this.tipoSangre,
     required this.peso,
     required this.telefono,
     required EstadoElegibilidad elegibilidad,
-  }) : _elegibilidad = elegibilidad;
+  }) :  rut = validarYNormalizarRut(rut), 
+        _elegibilidad = elegibilidad;
 
   //Verificar si el donante es apto para donar sangre
   bool get esApto => _elegibilidad == EstadoElegibilidad.apto;
@@ -54,7 +55,9 @@ class Donante {
 }
 
 //Función auxiliar que verifica que un rut sea valido y cumpla con el formato 12345678-9
-bool esRutValido(String rut) {
+bool esRutValido(String rutRecibido) {
+  //Se limpia por si el usuario escribió espacios.
+  final rut = rutRecibido.trim();
   //Validar estructura exacta: 7 u 8 dígitos (sin empezar en 0), guion y DV (0-9 o K/k)
   final regexFormato = RegExp(r'^[1-9]\d{6,7}-[\dkK]$');
   if (!regexFormato.hasMatch(rut)) {
@@ -88,4 +91,19 @@ bool esRutValido(String rut) {
 
   //Comparar DV ingresado con el calculado
   return dvIngresado == dvEsperado;
+}
+
+
+//Valida el rut y añade normalización para almacenar con K mayúscula como estándar.
+//Excepción si el Rut está vació o no cumple formato.
+String validarYNormalizarRut(String rut) {
+  if (rut.trim().isEmpty) {
+    throw ArgumentError('El RUT no puede estar vacío.');
+  }
+  if (!esRutValido(rut)) {
+    throw ArgumentError(
+      'El RUT ingresado no tiene un formato válido (ej: 12345678-K) o su dígito verificador es incorrecto.',
+    );
+  }
+  return rut.trim().toUpperCase();
 }

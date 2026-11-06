@@ -77,5 +77,12 @@ void main() {
         expect(donante.hashCode, isNot(equals(donante3.hashCode)));
       });
     });
+
+    test('toString incluye la etiqueta formateada del tipo de sangre', () {
+      final texto = donante.toString();
+
+      expect(texto, contains('rut: 12345678-9'));
+      expect(texto, contains('tipoSangre: O+'));
+    });
   });
 }

@@ -16,12 +16,13 @@ class Donacion{
 
         required this.id, //id de 7 digitos 
         required this.tipoSangre,
-        required this.volumenDonado,
+        required double volumenDonado,
         required this.fechaDeToma,
         
     })  : 
           estadoDonacion = EstadoDonacion.disponible, //el estado inicial de la donacion es: disponible
-          fechaDeCaducidad = calcularFechaCaducidad(fechaDeToma);
+          fechaDeCaducidad = calcularFechaCaducidad(fechaDeToma),
+          volumenDonado = _validarVolumen(volumenDonado);
 
 
     //calcula la fecha de caducidad como la fecha de toma + 42 dias despues
@@ -47,6 +48,16 @@ class Donacion{
     }
 
 
+    //valida el volumen donado
+    static double _validarVolumen(double volumen) {
+
+        if (volumen <= 0) {
+            throw ArgumentError("el volumen debe tener valor positivo");
+        }
+        return volumen;
+
+    }
+    
           
     //Se sobrescribe el operador == para comparar donaciones por su id
     @override

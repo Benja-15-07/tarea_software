@@ -7,24 +7,21 @@ class Donacion{
 
     final String id;
     final TipoSangre tipoSangre;
-    final double volumen_donado;
-    final DateTime fecha_de_toma;
-    final DateTime fecha_de_caducidad;
-    EstadoDonacion estado_donacion;
+    final double volumenDonado;
+    final DateTime fechaDeToma;
+    final DateTime fechaDeCaducidad;
+    EstadoDonacion estadoDonacion;
 
     Donacion({
 
-        required this.id; //id de 7 digitos 
-        required this.tipo_sangre;
-        required this.volumen_donado;
-        required this.fecha_de_toma;
-        required DateTime fecha_de_caducidad;
-        required EstadoDonacion estado_donacion;
-        
+        required this.id, //id de 7 digitos 
+        required this.tipoSangre,
+        required this.volumenDonado,
+        required this.fechaDeToma,
         
     })  : 
-          estado_donacion = EstadoDonacion.disponible, //el estado inicial de la donacion es: disponible
-          fecha_de_caducidad = calcularFechaCaducidad(fecha_de_toma)
+          estadoDonacion = EstadoDonacion.disponible, //el estado inicial de la donacion es: disponible
+          fechaDeCaducidad = calcularFechaCaducidad(fechaDeToma);
 
 
     //calcula la fecha de caducidad como la fecha de toma + 42 dias despues
@@ -33,23 +30,39 @@ class Donacion{
     return fechaToma.add(const Duration(days: 42));
 
     }
-          
 
+    //Permite actualizar el estado de la donacion de disponible al nuevo
+    //estado dado
+    bool actualizarEstado(EstadoDonacion nuevoEstado) {
+
+        //si el estado actual es disponible se hace el cambio
+        if (estadoDonacion == EstadoDonacion.disponible) {
+            estadoDonacion = nuevoEstado;
+            return true;
+        }
+
+        // si el estado actual es diferente de disponible,
+        // no se permite el cambio y se retorna false.
+        return false; 
+    }
+
+
+          
     //Se sobrescribe el operador == para comparar donaciones por su id
     @override
     bool operator ==(Object other) =>
       identical(this, other) ||
       other is Donacion && runtimeType == other.runtimeType && id == other.id;
 
-    //Se sobrescribe el hashCode para que coincida con la implementacion de ==
+    //se sobrescribe el hashCode para que coincida con la implementacion de ==
     @override
     int get hashCode => id.hashCode;
          
 
-    //Representación en String del donante
+    //representacion en string de la donacion
     @override
     String toString() {
-        return "Donacion{id: $id, tipoSangre: ${tipoSangre.etiqueta}, volumenDonado: $volumen_donado, fechaToma: $fecha_de_toma, fechaCaducidad: $fecha_de_caducidad, estado: $estado_donacion}";
+        return "Donacion{id: $id, tipoSangre: ${tipoSangre.etiqueta}, volumenDonado: $volumenDonado, fechaToma: $fechaDeToma, fechaCaducidad: $fechaDeCaducidad, estado: $estadoDonacion}";
     }
 
     

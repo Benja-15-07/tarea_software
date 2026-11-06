@@ -24,19 +24,20 @@ class RegistroDonantes {
   Donante? buscarPorRut(String rut) {
   final rutNormalizado = validarYNormalizarRut(rut);
   return _donantes[rutNormalizado];
-}
+  }
 
   //Verifica un rut en sistema.
   bool existeDonante(String rut) {
-    return _donantes.containsKey(rut);
+    final rutNormalizado = validarYNormalizarRut(rut);
+    return _donantes.containsKey(rutNormalizado);
   }
 
   // Actualiza la elegibilidad de un donante registrado según su RUT.
   bool actualizarElegibilidadDonante(String rut, EstadoElegibilidad nuevoEstado) {
-  final donante = _donantes[rut];
-  if (donante == null) {
-    return false;
+    final donante = buscarPorRut(rut);
+    if (donante == null) {
+      return false;
+    }
+    return donante.actualizarElegibilidad(nuevoEstado);
   }
-  return donante.actualizarElegibilidad(nuevoEstado);
-}
 }

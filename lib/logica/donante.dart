@@ -7,26 +7,37 @@ class Donante {
   final String nombre;
   final DateTime fechaNacimiento;
   final TipoSangre tipoSangre;
-  double peso;
-  String telefono;
+  double _peso;
+  String _telefono;
   EstadoElegibilidad _elegibilidad;
 
   Donante({
     required String rut,
-    required this.nombre,
+    required String nombre,
     required DateTime fechaNacimiento,
     required this.tipoSangre,
-    required this.peso,
-    required this.telefono,
+    required double peso,
+    required String telefono,
     required EstadoElegibilidad elegibilidad,
   }) :  rut = validarYNormalizarRut(rut),
+        nombre = validarNombre(nombre),
         fechaNacimiento = validarFechaNacimiento(fechaNacimiento),
+        _peso = validarPeso(peso),
+        _telefono = validarYNormalizarTelefono(telefono),
         _elegibilidad = elegibilidad;
 
 
   //Getter para edad.
   int get edad => calcularEdad(fechaNacimiento);
-  
+
+  //Getter y Setter de peso
+  double get peso => _peso;
+  set peso(double nuevoPeso) => _peso = validarPeso(nuevoPeso);
+
+  //Getter y Setter de número de telefono.
+  String get telefono => _telefono;
+  set telefono(String nuevoTelefono) => _telefono = validarYNormalizarTelefono(nuevoTelefono);
+
   //Verificar si el donante es apto para donar sangre
   bool get esApto => _elegibilidad == EstadoElegibilidad.apto;
 
@@ -59,18 +70,20 @@ class Donante {
   }
 }
 
+//FUNCIONES AUXILIARES
+
 //Función auxiliar que verifica que un rut sea valido y cumpla con el formato 12345678-9
 bool esRutValido(String rutRecibido) {
   //Se limpia por si el usuario escribió espacios.
   final rut = rutRecibido.trim();
   //Validar estructura exacta: 7 u 8 dígitos (sin empezar en 0), guion y DV (0-9 o K/k)
-  final regexFormato = RegExp(r'^[1-9]\d{6,7}-[\dkK]$');
+  final regexFormato = RegExp(r"^[1-9]\d{6,7}-[\dkK]$");
   if (!regexFormato.hasMatch(rut)) {
     return false;
   }
 
   //Separar cuerpo y dígito verificador (normalizado a mayúscula)
-  final partes = rut.split('-');
+  final partes = rut.split("-");
   final cuerpo = partes[0];
   final dvIngresado = partes[1].toUpperCase();
 
@@ -87,9 +100,9 @@ bool esRutValido(String rutRecibido) {
   final resto = 11 - (suma % 11);
   final String dvEsperado;
   if (resto == 11) {
-    dvEsperado = '0';
+    dvEsperado = "0";
   } else if (resto == 10) {
-    dvEsperado = 'K';
+    dvEsperado = "K";
   } else {
     dvEsperado = resto.toString();
   }
@@ -103,11 +116,11 @@ bool esRutValido(String rutRecibido) {
 //Excepción si el Rut está vació o no cumple formato.
 String validarYNormalizarRut(String rut) {
   if (rut.trim().isEmpty) {
-    throw ArgumentError('El RUT no puede estar vacío.');
+    throw ArgumentError("El RUT no puede estar vacío.");
   }
   if (!esRutValido(rut)) {
     throw ArgumentError(
-      'El RUT ingresado no tiene un formato válido (ej: 12345678-K) o su dígito verificador es incorrecto.',
+      "El RUT ingresado no tiene un formato válido (ej: 12345678-K) o su dígito verificador es incorrecto.",
     );
   }
   return rut.trim().toUpperCase();
@@ -127,7 +140,15 @@ int calcularEdad(DateTime fechaNacimiento) {
   return edad;
 }
 
-// Valida rango edad (17 a 65 años) y fecha no futura.
+//Valida que el nombre no esté vacío.
+String validarNombre(String nombre) {
+  if (nombre.trim().isEmpty) {
+    throw ArgumentError("El nombre no puede estar vacío.");
+  }
+  return nombre.trim();
+}
+
+// Valida rango edad (17 a 70 años) y fecha no futura.
 /// Retorna la fecha normalizada (solo año, mes y día) o lanza ArgumentError.
 DateTime validarFechaNacimiento(DateTime fechaNacimiento) {
   final hoy = DateTime.now();
@@ -140,22 +161,43 @@ DateTime validarFechaNacimiento(DateTime fechaNacimiento) {
   final hoyLimpio = DateTime(hoy.year, hoy.month, hoy.day);
 
   if (fechaLimpia.isAfter(hoyLimpio)) {
-    throw ArgumentError('La fecha de nacimiento no puede ser una fecha futura.');
+    throw ArgumentError("La fecha de nacimiento no puede ser una fecha futura.");
   }
 
   final edad = calcularEdad(fechaLimpia);
 
   if (edad < 17) {
     throw ArgumentError(
-      'El donante debe tener al menos 17 años (edad actual: $edad años).',
+      "El donante debe tener al menos 17 años (edad actual: $edad años).",
     );
   }
 
-  if (edad > 65) {
+  if (edad > 70) {
     throw ArgumentError(
-      'El donante supera la edad máxima permitida de 65 años (edad actual: $edad años).',
+      "El donante supera la edad máxima permitida de 70 años (edad actual: $edad años).",
     );
   }
 
   return fechaLimpia;
+}
+
+// Valida el peso
+double validarPeso(double peso) {
+  if (peso <= 0 || peso > 300) {
+    throw ArgumentError("Ingrese un peso válido mayor a 0 kg.");
+  }
+  return peso;
+}
+
+// Valida un formato de teléfono
+String validarYNormalizarTelefono(String telefonoRecibido) {
+  final telefono = telefonoRecibido.trim();
+  final regexTelefono = RegExp(r"^(\+56)? ?9\d{8}$");
+  if (!regexTelefono.hasMatch(telefono)) {
+    throw ArgumentError(
+      "El teléfono ingresado no tiene un formato válido (ej: +56912345678 o 912345678).",
+    );
+  }
+  final sinEspacios = telefono.replaceAll(" ", "");
+  return sinEspacios.startsWith("+56") ? sinEspacios : "+56$sinEspacios";
 }

@@ -14,14 +14,19 @@ class Donante {
   Donante({
     required String rut,
     required this.nombre,
-    required this.fechaNacimiento,
+    required DateTime fechaNacimiento,
     required this.tipoSangre,
     required this.peso,
     required this.telefono,
     required EstadoElegibilidad elegibilidad,
-  }) :  rut = validarYNormalizarRut(rut), 
+  }) :  rut = validarYNormalizarRut(rut),
+        fechaNacimiento = validarFechaNacimiento(fechaNacimiento),
         _elegibilidad = elegibilidad;
 
+
+  //Getter para edad.
+  int get edad => calcularEdad(fechaNacimiento);
+  
   //Verificar si el donante es apto para donar sangre
   bool get esApto => _elegibilidad == EstadoElegibilidad.apto;
 
@@ -106,4 +111,51 @@ String validarYNormalizarRut(String rut) {
     );
   }
   return rut.trim().toUpperCase();
+}
+
+
+/// Calcula la edad exacta a la fecha de hoy.
+int calcularEdad(DateTime fechaNacimiento) {
+  final hoy = DateTime.now();
+  int edad = hoy.year - fechaNacimiento.year;
+
+  // Si aún no cumple, se resta 1 año
+  if (hoy.month < fechaNacimiento.month ||
+      (hoy.month == fechaNacimiento.month && hoy.day < fechaNacimiento.day)) {
+    edad--;
+  }
+  return edad;
+}
+
+// Valida rango edad (17 a 65 años) y fecha no futura.
+/// Retorna la fecha normalizada (solo año, mes y día) o lanza ArgumentError.
+DateTime validarFechaNacimiento(DateTime fechaNacimiento) {
+  final hoy = DateTime.now();
+  // Normalizamos quitando horas, minutos y segundos
+  final fechaLimpia = DateTime(
+    fechaNacimiento.year,
+    fechaNacimiento.month,
+    fechaNacimiento.day,
+  );
+  final hoyLimpio = DateTime(hoy.year, hoy.month, hoy.day);
+
+  if (fechaLimpia.isAfter(hoyLimpio)) {
+    throw ArgumentError('La fecha de nacimiento no puede ser una fecha futura.');
+  }
+
+  final edad = calcularEdad(fechaLimpia);
+
+  if (edad < 17) {
+    throw ArgumentError(
+      'El donante debe tener al menos 17 años (edad actual: $edad años).',
+    );
+  }
+
+  if (edad > 65) {
+    throw ArgumentError(
+      'El donante supera la edad máxima permitida de 65 años (edad actual: $edad años).',
+    );
+  }
+
+  return fechaLimpia;
 }

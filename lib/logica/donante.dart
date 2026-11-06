@@ -7,7 +7,7 @@ class Donante {
   final String nombre;
   final DateTime fechaNacimiento;
   final TipoSangre tipoSangre;
-  int peso;
+  double peso;
   String telefono;
   EstadoElegibilidad _elegibilidad;
 
@@ -51,4 +51,41 @@ class Donante {
   String toString() {
     return "Donante{rut: $rut, nombre: $nombre, fechaNacimiento: $fechaNacimiento, tipoSangre: ${tipoSangre.etiqueta}, peso: $peso, telefono: $telefono, elegibilidad: $_elegibilidad}";
   }
+}
+
+//Función auxiliar que verifica que un rut sea valido y cumpla con el formato 12345678-9
+bool esRutValido(String rut) {
+  //Validar estructura exacta: 7 u 8 dígitos (sin empezar en 0), guion y DV (0-9 o K/k)
+  final regexFormato = RegExp(r'^[1-9]\d{6,7}-[\dkK]$');
+  if (!regexFormato.hasMatch(rut)) {
+    return false;
+  }
+
+  //Separar cuerpo y dígito verificador (normalizado a mayúscula)
+  final partes = rut.split('-');
+  final cuerpo = partes[0];
+  final dvIngresado = partes[1].toUpperCase();
+
+  //Calcular Módulo 11 de derecha a izquierda
+  int suma = 0;
+  int multiplicador = 2;
+
+  for (int i = cuerpo.length - 1; i >= 0; i--) {
+    final digito = int.parse(cuerpo[i]);
+    suma += digito * multiplicador;
+    multiplicador = (multiplicador == 7) ? 2 : multiplicador + 1;
+  }
+
+  final resto = 11 - (suma % 11);
+  final String dvEsperado;
+  if (resto == 11) {
+    dvEsperado = '0';
+  } else if (resto == 10) {
+    dvEsperado = 'K';
+  } else {
+    dvEsperado = resto.toString();
+  }
+
+  //Comparar DV ingresado con el calculado
+  return dvIngresado == dvEsperado;
 }

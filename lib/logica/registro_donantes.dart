@@ -22,7 +22,7 @@ class RegistroDonantes {
 
   //Busca un donante, retorna null si no existe.
   Donante? buscarPorRut(String rut) {
-    return _donantes[rut];
+    return _donantes[rut.trim()];
   }
 
   //Verifica un rut en sistema.

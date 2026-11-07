@@ -229,16 +229,16 @@ class _PantallaRegistroDonantesState extends State<PantallaRegistroDonantes> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // Encabezado del formulario
-                      Expanded(
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.person_add_alt_1,
-                              color: ColoresApp.primario,
-                              size: 28,
-                            ),
-                            SizedBox(width: 12),
-                            Text(
+                      Row(
+                        children: const [
+                          Icon(
+                            Icons.person_add_alt_1,
+                            color: ColoresApp.primario,
+                            size: 28,
+                          ),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
                               "Registro de Nuevo Donante",
                               style: TextStyle(
                                 fontSize: 20,
@@ -246,8 +246,8 @@ class _PantallaRegistroDonantesState extends State<PantallaRegistroDonantes> {
                                 color: ColoresApp.textoPrincipal,
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 6),
                       const Text(

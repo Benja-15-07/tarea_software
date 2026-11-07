@@ -21,38 +21,4 @@ class ColoresApp {
   // Estados semánticos (SnackBars y alertas)
   static const Color exito = Color(0xFF388E3C);
   static const Color error = Color(0xFFD32F2F);
-
-  /// Tema global de la aplicación para no repetir estilos en cada vista
-  static ThemeData get temaGlobal {
-    return ThemeData(
-      useMaterial3: true,
-      scaffoldBackgroundColor: fondoPantalla,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primario,
-        primary: primario,
-        error: error,
-        surface: superficieTarjeta,
-      ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: primario,
-        foregroundColor: textoSobrePrimario,
-        centerTitle: true,
-        elevation: 2,
-      ),
-      inputDecorationTheme: const InputDecorationTheme(
-        border: OutlineInputBorder(),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primario,
-          foregroundColor: textoSobrePrimario,
-          disabledBackgroundColor: botonDeshabilitadoFondo,
-          disabledForegroundColor: botonDeshabilitadoTexto,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-          ),
-        ),
-      ),
-    );
-  }
 }

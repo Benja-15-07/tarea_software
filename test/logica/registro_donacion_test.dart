@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:proyecto_banco_sangre/logica/registro_donacion.dart';
 import 'package:proyecto_banco_sangre/logica/enums/tipo_sangre.dart';
+import 'package:proyecto_banco_sangre/logica/resultado_retiro.dart';
 
 void main() {
   group('Pruebas unitarias de RegistroDonacion', () {
@@ -33,11 +34,10 @@ void main() {
       expect(donacion.tipoSangre, TipoSangre.aPositivo);
       expect(donacion.volumenDonado, 450);
       expect(donacion.fechaDeToma, fecha);
-      expect(donacion.rutDonante,"12345678-5");
+      expect(donacion.rutDonante, "12345678-5");
     });
 
     test('Test 2: Preservar donaciones anteriores al agregar una nueva', () {
-      
       //se registra una primera donacion
       final fechaPrimera = DateTime(2026, 10, 1);
       final idPrimera = registro.ingresarDonacion(
@@ -66,10 +66,22 @@ void main() {
       // se verifica que la primera donacion no haya cambiado
       final donacionPrimeraDespues = registro.buscarPorId(idPrimera)!;
       expect(donacionPrimeraDespues.id, donacionPrimeraAntes.id);
-      expect(donacionPrimeraDespues.tipoSangre, donacionPrimeraAntes.tipoSangre);
-      expect(donacionPrimeraDespues.volumenDonado, donacionPrimeraAntes.volumenDonado);
-      expect(donacionPrimeraDespues.fechaDeToma, donacionPrimeraAntes.fechaDeToma);
-      expect(donacionPrimeraDespues.rutDonante, donacionPrimeraAntes.rutDonante);
+      expect(
+        donacionPrimeraDespues.tipoSangre,
+        donacionPrimeraAntes.tipoSangre,
+      );
+      expect(
+        donacionPrimeraDespues.volumenDonado,
+        donacionPrimeraAntes.volumenDonado,
+      );
+      expect(
+        donacionPrimeraDespues.fechaDeToma,
+        donacionPrimeraAntes.fechaDeToma,
+      );
+      expect(
+        donacionPrimeraDespues.rutDonante,
+        donacionPrimeraAntes.rutDonante,
+      );
 
       // se verifica que la 2da donacion se haya almacenado correctamente
       final donacionSegunda = registro.buscarPorId(idSegunda)!;
@@ -80,7 +92,6 @@ void main() {
     });
 
     test('Test 3: Rechazar una donación con datos inválidos', () {
-      
       //se guarda la cantidad de donaciones que existen antes de ingresar una
       final cantidadInicial = registro.cantidadDonaciones;
 
@@ -90,7 +101,7 @@ void main() {
           tipoSangre: TipoSangre.aPositivo,
           volumenDonado: 0,
           fechaDeToma: DateTime(2026, 11, 6),
-          rutDonante: "12345678-5"
+          rutDonante: "12345678-5",
         ),
         throwsA(
           isA<ArgumentError>().having(
@@ -104,71 +115,123 @@ void main() {
       // Se verifica que la donacion invalida no se haya añadido al registro
       expect(registro.cantidadDonaciones, cantidadInicial);
     });
+
+    group('retirarDonacionVencida', () {
+      test('retira exitosamente una donación vencida', () {
+        final id = registro.ingresarDonacion(
+          tipoSangre: TipoSangre.oNegativo,
+          volumenDonado: 450,
+          fechaDeToma: DateTime.now().subtract(const Duration(days: 50)),
+          rutDonante: "12345678-5",
+        );
+
+        final resultado = registro.retirarDonacionVencida(id);
+
+        expect(resultado.fueExitoso, isTrue);
+        expect(resultado.estado, EstadoRetiro.exitoso);
+        expect(resultado.mensaje, contains("exitosamente"));
+        expect(registro.existeDonacion(id), isFalse);
+        expect(registro.buscarPorId(id), isNull);
+      });
+
+      test('rechaza retirar una donación vigente', () {
+        final id = registro.ingresarDonacion(
+          tipoSangre: TipoSangre.aPositivo,
+          volumenDonado: 450,
+          fechaDeToma: DateTime.now().subtract(const Duration(days: 10)),
+          rutDonante: "12345678-5",
+        );
+
+        final resultado = registro.retirarDonacionVencida(id);
+
+        expect(resultado.fueExitoso, isFalse);
+        expect(resultado.estado, EstadoRetiro.noVencida);
+        expect(resultado.mensaje, contains("no está vencida"));
+        expect(registro.existeDonacion(id), isTrue);
+        expect(registro.buscarPorId(id), isNotNull);
+      });
+
+      test('rechaza retirar una donación inexistente', () {
+        final idValido = registro.ingresarDonacion(
+          tipoSangre: TipoSangre.bNegativo,
+          volumenDonado: 450,
+          fechaDeToma: DateTime.now().subtract(const Duration(days: 5)),
+          rutDonante: "12345678-5",
+        );
+        final cantidadAntes = registro.cantidadDonaciones;
+
+        final resultado = registro.retirarDonacionVencida("9999999");
+
+        expect(resultado.fueExitoso, isFalse);
+        expect(resultado.estado, EstadoRetiro.noEncontrada);
+        expect(resultado.mensaje, contains("No se encontró"));
+        expect(registro.cantidadDonaciones, cantidadAntes);
+        expect(registro.existeDonacion(idValido), isTrue);
+      });
+    });
   });
 
   test('Test 4: Evitar colisiones de IDs y preservar la donación anterior', () {
+    // Se prepara una secuencia de IDs que simula una colisión.
+    // El segundo ID generado será igual al primero.
+    final ids = ['1234567', '1234567', '7654321'];
+    int indice = 0;
 
-  // Se prepara una secuencia de IDs que simula una colisión.
-  // El segundo ID generado será igual al primero.
-  final ids = ['1234567', '1234567', '7654321'];
-  int indice = 0;
+    // Se crea un registro con un generador de IDs controlado.
+    final registroPrueba = RegistroDonacion(
+      generarId: () {
+        String id = ids[indice];
+        indice++;
+        return id;
+      },
+    );
 
-  // Se crea un registro con un generador de IDs controlado.
-  final registroPrueba = RegistroDonacion(
-    generarId: () {
-      String id = ids[indice];
-      indice++;
-      return id;
-    },
-  );
+    // Se registra la primera donación.
+    final idPrimera = registroPrueba.ingresarDonacion(
+      tipoSangre: TipoSangre.oNegativo,
+      volumenDonado: 450,
+      fechaDeToma: DateTime(2026, 11, 6),
+      rutDonante: "12345678-5",
+    );
 
-  // Se registra la primera donación.
-  final idPrimera = registroPrueba.ingresarDonacion(
-    tipoSangre: TipoSangre.oNegativo,
-    volumenDonado: 450,
-    fechaDeToma: DateTime(2026, 11, 6),
-    rutDonante: "12345678-5",
-  );
+    final donacionPrimeraAntes = registroPrueba.buscarPorId(idPrimera)!;
 
-  final donacionPrimeraAntes = registroPrueba.buscarPorId(idPrimera)!;
+    // Se registra la segunda donación.
+    // El generador primero intentará utilizar un ID repetido.
+    final idSegunda = registroPrueba.ingresarDonacion(
+      tipoSangre: TipoSangre.aPositivo,
+      volumenDonado: 450,
+      fechaDeToma: DateTime(2026, 11, 6),
+      rutDonante: "12345678-5",
+    );
 
-  // Se registra la segunda donación.
-  // El generador primero intentará utilizar un ID repetido.
-  final idSegunda = registroPrueba.ingresarDonacion(
-    tipoSangre: TipoSangre.aPositivo,
-    volumenDonado: 450,
-    fechaDeToma: DateTime(2026, 11, 6),
-    rutDonante: "12345678-5",
-  );
+    // Se comprueba que la primera donación recibió el primer ID.
+    expect(idPrimera, '1234567');
 
-  // Se comprueba que la primera donación recibió el primer ID.
-  expect(idPrimera, '1234567');
+    // Se comprueba que, ante la colisión, se generó otro ID.
+    expect(idSegunda, '7654321');
+    expect(idSegunda, isNot(idPrimera));
 
-  // Se comprueba que, ante la colisión, se generó otro ID.
-  expect(idSegunda, '7654321');
-  expect(idSegunda, isNot(idPrimera));
+    // Se comprueba que ambas donaciones siguen almacenadas.
+    expect(registroPrueba.cantidadDonaciones, 2);
+    expect(registroPrueba.existeDonacion(idPrimera), isTrue);
+    expect(registroPrueba.existeDonacion(idSegunda), isTrue);
 
-  // Se comprueba que ambas donaciones siguen almacenadas.
-  expect(registroPrueba.cantidadDonaciones, 2);
-  expect(registroPrueba.existeDonacion(idPrimera), isTrue);
-  expect(registroPrueba.existeDonacion(idSegunda), isTrue);
+    // Se comprueba que la primera donación no fue reemplazada.
+    final donacionPrimeraDespues = registroPrueba.buscarPorId(idPrimera)!;
 
-  // Se comprueba que la primera donación no fue reemplazada.
-  final donacionPrimeraDespues = registroPrueba.buscarPorId(idPrimera)!;
+    expect(donacionPrimeraDespues.id, donacionPrimeraAntes.id);
+    expect(donacionPrimeraDespues.tipoSangre, donacionPrimeraAntes.tipoSangre);
+    expect(
+      donacionPrimeraDespues.volumenDonado,
+      donacionPrimeraAntes.volumenDonado,
+    );
+    expect(donacionPrimeraDespues.rutDonante, donacionPrimeraAntes.rutDonante);
 
-  expect(donacionPrimeraDespues.id, donacionPrimeraAntes.id);
-  expect(donacionPrimeraDespues.tipoSangre, donacionPrimeraAntes.tipoSangre);
-  expect(donacionPrimeraDespues.volumenDonado, donacionPrimeraAntes.volumenDonado);
-  expect(donacionPrimeraDespues.rutDonante, donacionPrimeraAntes.rutDonante);
+    // Se comprueba que la segunda donación se almacenó con sus datos.
+    final donacionSegunda = registroPrueba.buscarPorId(idSegunda)!;
 
-  // Se comprueba que la segunda donación se almacenó con sus datos.
-  final donacionSegunda = registroPrueba.buscarPorId(idSegunda)!;
-
-  expect(donacionSegunda.tipoSangre, TipoSangre.aPositivo);
-  expect(donacionSegunda.volumenDonado, 450);
-});
-
-  
+    expect(donacionSegunda.tipoSangre, TipoSangre.aPositivo);
+    expect(donacionSegunda.volumenDonado, 450);
+  });
 }
-
-

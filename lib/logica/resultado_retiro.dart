@@ -16,11 +16,11 @@ class ResultadoRetiro {
   String get mensaje {
     switch (estado) {
       case EstadoRetiro.exitoso:
-        return "Donación retirada exitosamente.";
+        return "Donación retirada exitosamente";
       case EstadoRetiro.noVencida:
-        return "No se puede retirar: la donación no está vencida.";
+        return "No se puede retirar: la donación no está vencida";
       case EstadoRetiro.noEncontrada:
-        return "No se encontró ninguna donación con ese ID.";
+        return "No se encontró ninguna donación con ese ID";
     }
   }
 }

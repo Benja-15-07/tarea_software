@@ -8,6 +8,15 @@ class RegistroDonacion{
   //map de donaciones que usa el id como clave
   final Map<String, Donacion> _donaciones = {};
 
+  //vuncion que se encarga de generar los IDs
+  final String Function() _generarId;
+
+  // constructor: si no se recibe una funcion generadora,
+  // se utiliza el generador aleatorio.
+  RegistroDonacion({String Function()? generarId})
+    : _generarId = generarId ?? _generarIdAleatorio;
+
+
   //retorna una lista inmodificable de donaciones
   List<Donacion> get donaciones => List.unmodifiable(_donaciones.values);
   
@@ -19,8 +28,9 @@ class RegistroDonacion{
   //al map de donaciones y retorna el id generado
   String ingresarDonacion({
     required TipoSangre tipoSangre,
-    required double volumenDonado,
+    required int volumenDonado,
     required DateTime fechaDeToma,
+    required String rutDonante,
     }){
     
     String id;
@@ -35,6 +45,8 @@ class RegistroDonacion{
         tipoSangre: tipoSangre,
         volumenDonado: volumenDonado,
         fechaDeToma: fechaDeToma,
+        rutDonante: rutDonante,
+
     );
 
     // se almacena la donacion
@@ -72,8 +84,8 @@ class RegistroDonacion{
 
   //genera un numero de 7 digitos entre 1000000 y 9999999 y lo convierte a String 
   //para utilizarlo como id
-  String _generarId(){
 
+  static String _generarIdAleatorio() {
     Random random = Random();
     int numero = 1000000 + random.nextInt(9000000);
 
@@ -81,6 +93,7 @@ class RegistroDonacion{
   }
 
 }
+
 
 
 

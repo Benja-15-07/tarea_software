@@ -7,22 +7,26 @@ class Donacion{
 
     final String id;
     final TipoSangre tipoSangre;
-    final double volumenDonado;
+    final int volumenDonado;
     final DateTime fechaDeToma;
     final DateTime fechaDeCaducidad;
     EstadoDonacion estadoDonacion;
+    final String rutDonante;
 
     Donacion({
 
         required this.id, //id de 7 digitos 
         required this.tipoSangre,
-        required double volumenDonado,
-        required this.fechaDeToma,
+        required int volumenDonado,
+        required this.rutDonante,
+        required DateTime fechaDeToma,
         
     })  : 
           estadoDonacion = EstadoDonacion.disponible, //el estado inicial de la donacion es: disponible
+          fechaDeToma = _validarFechaDeToma(fechaDeToma),
           fechaDeCaducidad = calcularFechaCaducidad(fechaDeToma),
           volumenDonado = _validarVolumen(volumenDonado);
+          
 
 
     //calcula la fecha de caducidad como la fecha de toma + 42 dias despues
@@ -49,13 +53,30 @@ class Donacion{
 
 
     //valida el volumen donado
-    static double _validarVolumen(double volumen) {
+    static int _validarVolumen(int volumen) {
+      
+      if (volumen < 400 || volumen > 500) {
+          throw ArgumentError(
+           "el volumen debe estar en un rango entre 400 y 500 ml");
+      }
+      return volumen;
 
-        if (volumen <= 0) {
-            throw ArgumentError("el volumen debe tener valor positivo");
-        }
-        return volumen;
+    }
 
+    //devuelve true en caso de que la donacion haya pasado su fecha de 
+    //caducidad
+    bool estaExpirada() {
+      return DateTime.now().isAfter(fechaDeCaducidad);
+    }
+
+    //valida que la fecha de toma no sea posterior a la fecha actual
+    static DateTime _validarFechaDeToma(DateTime fecha) {
+
+      if (fecha.isAfter(DateTime.now())) {
+        throw ArgumentError("la fecha de toma no puede ser futura");
+      }
+
+      return fecha;
     }
     
           

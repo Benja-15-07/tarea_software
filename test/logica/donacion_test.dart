@@ -16,6 +16,7 @@ void main() {
         tipoSangre: TipoSangre.aPositivo,
         volumenDonado: 450,
         fechaDeToma: fechaToma,
+        rutDonante: "12345678-5",
       );
     });
 
@@ -24,6 +25,7 @@ void main() {
       expect(donacion.tipoSangre, TipoSangre.aPositivo);
       expect(donacion.volumenDonado, 450);
       expect(donacion.fechaDeToma, fechaToma);
+      expect(donacion.rutDonante, "12345678-5");
       expect(
         donacion.fechaDeCaducidad,
         fechaToma.add(const Duration(days: 42)),
@@ -37,34 +39,84 @@ void main() {
       expect(fechaCaducidad, DateTime(2026, 12, 18));
     });
 
-    test("rechaza un volumen igual a cero", () {
-      expect(
-        () => Donacion(
-          id: "1234567",
-          tipoSangre: TipoSangre.aPositivo,
-          volumenDonado: 0,
-          fechaDeToma: fechaToma,
-        ),
-        throwsA(
-          isA<ArgumentError>().having(
-            (error) => error.message,
-            "message",
-            "el volumen debe tener valor positivo",
-          ),
-        ),
+    test("acepta un volumen de 400 ml", () {
+      final otraDonacion = Donacion(
+        id: "1234568",
+        tipoSangre: TipoSangre.aPositivo,
+        volumenDonado: 400,
+        fechaDeToma: fechaToma,
+        rutDonante: "12345678-5",
       );
+
+      expect(otraDonacion.volumenDonado, 400);
     });
 
-    test("rechaza un volumen negativo", () {
+    test("acepta un volumen de 500 ml", () {
+      final otraDonacion = Donacion(
+        id: "1234568",
+        tipoSangre: TipoSangre.aPositivo,
+        volumenDonado: 500,
+        fechaDeToma: fechaToma,
+        rutDonante: "12345678-5",
+      );
+
+      expect(otraDonacion.volumenDonado, 500);
+    });
+
+    test("rechaza un volumen inferior a 400 ml", () {
       expect(
         () => Donacion(
           id: "1234567",
           tipoSangre: TipoSangre.aPositivo,
-          volumenDonado: -10,
+          volumenDonado: 399,
           fechaDeToma: fechaToma,
+          rutDonante: "12345678-5",
         ),
         throwsA(isA<ArgumentError>()),
       );
+    });
+
+    test("rechaza un volumen superior a 500 ml", () {
+      expect(
+        () => Donacion(
+          id: "1234567",
+          tipoSangre: TipoSangre.aPositivo,
+          volumenDonado: 501,
+          fechaDeToma: fechaToma,
+          rutDonante: "12345678-5",
+        ),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+
+    test("rechaza una fecha de toma futura", () {
+      expect(
+        () => Donacion(
+          id: "1234567",
+          tipoSangre: TipoSangre.aPositivo,
+          volumenDonado: 450,
+          fechaDeToma: DateTime.now().add(const Duration(days: 1)),
+          rutDonante: "12345678-5",
+        ),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+
+    test("no considera expirada una donacion vigente", () {
+      expect(donacion.estaExpirada(), isFalse);
+    });
+
+
+    test("considera expirada una donacion cuya fecha de caducidad ya paso", () {
+      final donacionExpirada = Donacion(
+        id: "1234568",
+        tipoSangre: TipoSangre.aPositivo,
+        volumenDonado: 450,
+        fechaDeToma: DateTime.now().subtract(const Duration(days: 43)),
+        rutDonante: "12345678-5",
+      );
+
+      expect(donacionExpirada.estaExpirada(), isTrue);
     });
 
     test("permite actualizar el estado cuando esta disponible", () {
@@ -75,6 +127,8 @@ void main() {
       expect(actualizado, isTrue);
       expect(donacion.estadoDonacion, EstadoDonacion.desechada);
     });
+
+  
 
     test("no permite actualizar nuevamente un estado que ya no es disponible", () {
       donacion.actualizarEstado(EstadoDonacion.desechada);
@@ -91,8 +145,9 @@ void main() {
       final otraDonacion = Donacion(
         id: "1234567",
         tipoSangre: TipoSangre.oNegativo,
-        volumenDonado: 300,
+        volumenDonado: 450,
         fechaDeToma: DateTime(2026, 11, 7),
+        rutDonante: "587654321-1",
       );
 
       expect(donacion, otraDonacion);
@@ -105,6 +160,7 @@ void main() {
         tipoSangre: TipoSangre.aPositivo,
         volumenDonado: 450,
         fechaDeToma: fechaToma,
+        rutDonante: "12345678-5",
       );
 
       expect(donacion, isNot(otraDonacion));
@@ -115,7 +171,7 @@ void main() {
 
       expect(representacion, contains("1234567"));
       expect(representacion, contains("A+"));
-      expect(representacion, contains("450.0"));
+      expect(representacion, contains("450"));
       expect(representacion, contains("disponible"));
     });
   });

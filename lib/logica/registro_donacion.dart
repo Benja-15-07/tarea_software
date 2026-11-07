@@ -2,9 +2,9 @@ import "package:proyecto_banco_sangre/logica/donacion.dart";
 import "package:proyecto_banco_sangre/logica/enums/estado_donacion.dart";
 import "package:proyecto_banco_sangre/logica/enums/tipo_sangre.dart";
 import "dart:math";
+import "package:proyecto_banco_sangre/logica/resultado_retiro.dart";
 
-class RegistroDonacion{
-  
+class RegistroDonacion {
   //map de donaciones que usa el id como clave
   final Map<String, Donacion> _donaciones = {};
 
@@ -16,13 +16,11 @@ class RegistroDonacion{
   RegistroDonacion({String Function()? generarId})
     : _generarId = generarId ?? _generarIdAleatorio;
 
-
   //retorna una lista inmodificable de donaciones
   List<Donacion> get donaciones => List.unmodifiable(_donaciones.values);
-  
+
   //entrega la cantidad de donaciones
   int get cantidadDonaciones => _donaciones.length;
-
 
   //crea una instancia de Donacion segun los parametros dados, la ingresa
   //al map de donaciones y retorna el id generado
@@ -31,58 +29,52 @@ class RegistroDonacion{
     required int volumenDonado,
     required DateTime fechaDeToma,
     required String rutDonante,
-    }){
-    
+  }) {
     String id;
 
     //se genera un id hasta encontrar uno que no este ocupado por otra donacion
     //del map
-    do {id = _generarId();} while (_donaciones.containsKey(id));
+    do {
+      id = _generarId();
+    } while (_donaciones.containsKey(id));
 
     //se crea la instancia de donacion con los argumentos dados y el id generado
     final donacion = Donacion(
-        id: id,
-        tipoSangre: tipoSangre,
-        volumenDonado: volumenDonado,
-        fechaDeToma: fechaDeToma,
-        rutDonante: rutDonante,
-
+      id: id,
+      tipoSangre: tipoSangre,
+      volumenDonado: volumenDonado,
+      fechaDeToma: fechaDeToma,
+      rutDonante: rutDonante,
     );
 
     // se almacena la donacion
     _donaciones[id] = donacion;
 
-    return id;   
-
+    return id;
   }
 
-
-
   //busca una donacion, retorna null si no existe.
-  Donacion? buscarPorId(String id){
+  Donacion? buscarPorId(String id) {
     return _donaciones[id];
   }
 
   //verifica si existe una donacion ocupando el id dado en el
   //map de donaciones, retorna true si existe
-  bool existeDonacion(String id){
+  bool existeDonacion(String id) {
     return _donaciones.containsKey(id);
-    
   }
 
   //actualiza el estado de una donacion registrada dado su id
-  bool actualizarEstadoDonacion(String id, EstadoDonacion nuevoEstado){
-
+  bool actualizarEstadoDonacion(String id, EstadoDonacion nuevoEstado) {
     final donacion = _donaciones[id];
-    if (donacion == null){
-        return false;
+    if (donacion == null) {
+      return false;
     }
 
     return donacion.actualizarEstado(nuevoEstado);
   }
 
-
-  //genera un numero de 7 digitos entre 1000000 y 9999999 y lo convierte a String 
+  //genera un numero de 7 digitos entre 1000000 y 9999999 y lo convierte a String
   //para utilizarlo como id
 
   static String _generarIdAleatorio() {
@@ -92,9 +84,21 @@ class RegistroDonacion{
     return numero.toString();
   }
 
+  //Retira del almacén la donación con id solo si está vencida*.
+  //Devuelve ResultadoRetiro.noEncontrada si el id no existe,
+  //ResultadoRetiro.noVencida si aún no está vencida y
+  //ResultadoRetiro.exitoso tras eliminarla del map
+  
+  ResultadoRetiro retirarDonacionVencida(String id) {
+    final donacion = _donaciones[id];
+    if (donacion == null){
+      return ResultadoRetiro.noEncontrada;
+    }
+    if (!donacion.estaExpirada()){
+      return ResultadoRetiro.noVencida;
+    }
+    //como está vencida se saca del map y se retorna exitoso
+    _donaciones.remove(id);
+    return ResultadoRetiro.exitoso;
+  }
 }
-
-
-
-
-

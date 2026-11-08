@@ -168,7 +168,99 @@ void main() {
   expect(donacionSegunda.volumenDonado, 450);
 });
 
-  
+group('Agrupación y Orden por Caducidad', () {
+    late RegistroDonacion registroT;
+
+    setUp(() {
+      registroT = RegistroDonacion();
+    });
+
+    test('Test 1: Agrupar unidades correctamente', () {
+      registroT.ingresarDonacion(
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 450,
+        fechaDeToma: DateTime(2026, 11, 1),
+        rutDonante: "12345678-5",
+      );
+      registroT.ingresarDonacion(
+        tipoSangre: TipoSangre.aPositivo,
+        volumenDonado: 450,
+        fechaDeToma: DateTime(2026, 11, 2),
+        rutDonante: "87654321-K",
+      );
+      final stockAgrupado = registroT.obtenerStockAgrupadoYOrdenado();
+
+      expect(stockAgrupado[TipoSangre.oPositivo]?.length, 1);
+      expect(stockAgrupado[TipoSangre.aPositivo]?.length, 1);
+      expect(stockAgrupado[TipoSangre.bPositivo]?.length, 0);
+    });
+
+    test('Test 2: Mantener unidades del mismo tipo agrupadas', () {
+      registroT.ingresarDonacion(
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 450,
+        fechaDeToma: DateTime(2026, 11, 1),
+        rutDonante: "12345678-5",
+      );
+      registroT.ingresarDonacion(
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 500,
+        fechaDeToma: DateTime(2026, 11, 2),
+        rutDonante: "87654321-K",
+      );
+
+      final stockAgrupado = registroT.obtenerStockAgrupadoYOrdenado();
+
+      expect(stockAgrupado[TipoSangre.oPositivo]?.length, 2);
+    });
+
+    test('Test 1: Ordenar unidades por caducidad', () {
+      final fechaAntigua = DateTime(2026, 10, 1); 
+      final fechaReciente = DateTime(2026, 11, 5); 
+
+      registroT.ingresarDonacion(
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 450,
+        fechaDeToma: fechaReciente,
+        rutDonante: "12345678-5",
+      );
+      registroT.ingresarDonacion(
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 450,
+        fechaDeToma: fechaAntigua,
+        rutDonante: "87654321-K",
+      );
+
+      final ordenadas = registroT.getDonacionesDisponiblesOrdenadasPorCaducidad();
+
+      expect(ordenadas.length, 2);
+      expect(ordenadas.first.fechaDeToma, fechaAntigua);
+      expect(ordenadas.last.fechaDeToma, fechaReciente);
+    });
+
+    test('Test 2: Ordenar unidades con la misma fecha de caducidad', () {
+      final mismaFecha = DateTime(2026, 10, 1);
+
+      registroT.ingresarDonacion(
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 450,
+        fechaDeToma: mismaFecha,
+        rutDonante: "12345678-5",
+      );
+      registroT.ingresarDonacion(
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 500,
+        fechaDeToma: mismaFecha,
+        rutDonante: "87654321-K",
+      );
+
+      final ordenadas = registroT.getDonacionesDisponiblesOrdenadasPorCaducidad();
+
+      expect(ordenadas.length, 2);
+    });
+  });
+
+
 }
 
 

@@ -84,21 +84,22 @@ class RegistroDonacion {
     return numero.toString();
   }
 
-  //Retira del almacén la donación con id solo si está vencida*.
+  //Retira del almacén la donación con id solo si está vencida.
   //Devuelve ResultadoRetiro.noEncontrada si el id no existe,
-  //ResultadoRetiro.noVencida si aún no está vencida y
-  //ResultadoRetiro.exitoso tras eliminarla del map
-  
+  //ResultadoRetiro.noVencida si aún no está vencida,
+  //ResultadoRetiro.yaDesechada si ya fue desechada, y
+  //ResultadoRetiro.exitoso tras actualizar su estado
   ResultadoRetiro retirarDonacionVencida(String id) {
     final donacion = _donaciones[id];
-    if (donacion == null){
-      return ResultadoRetiro.noEncontrada;
+    if (donacion == null) {
+      return const ResultadoRetiro(EstadoRetiro.noEncontrada);
     }
-    if (!donacion.estaExpirada()){
-      return ResultadoRetiro.noVencida;
+    if (!donacion.estaExpirada()) {
+      return const ResultadoRetiro(EstadoRetiro.noVencida);
     }
-    //como está vencida se saca del map y se retorna exitoso
-    _donaciones.remove(id);
-    return ResultadoRetiro.exitoso;
+    //la marca como desechada y retorna el resultado correspondiente
+    final actualizado = donacion.actualizarEstado(EstadoDonacion.desechada);
+    return actualizado? const ResultadoRetiro(EstadoRetiro.exitoso) : const ResultadoRetiro(EstadoRetiro.yaDesechada);
   }
+
 }

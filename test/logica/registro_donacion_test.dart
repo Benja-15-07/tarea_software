@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:proyecto_banco_sangre/logica/enums/estado_donacion.dart';
 import 'package:proyecto_banco_sangre/logica/registro_donacion.dart';
 import 'package:proyecto_banco_sangre/logica/enums/tipo_sangre.dart';
 import 'package:proyecto_banco_sangre/logica/resultado_retiro.dart';
@@ -129,9 +130,10 @@ void main() {
 
         expect(resultado.fueExitoso, isTrue);
         expect(resultado.estado, EstadoRetiro.exitoso);
-        expect(resultado.mensaje, contains("exitosamente"));
-        expect(registro.existeDonacion(id), isFalse);
-        expect(registro.buscarPorId(id), isNull);
+        expect(resultado.mensaje, contains("desechada exitosamente"));
+        final donacion = registro.buscarPorId(id);
+        expect(donacion, isNotNull);
+        expect(donacion!.estadoDonacion, EstadoDonacion.desechada);
       });
 
       test('rechaza retirar una donación vigente', () {
@@ -147,26 +149,31 @@ void main() {
         expect(resultado.fueExitoso, isFalse);
         expect(resultado.estado, EstadoRetiro.noVencida);
         expect(resultado.mensaje, contains("no está vencida"));
-        expect(registro.existeDonacion(id), isTrue);
-        expect(registro.buscarPorId(id), isNotNull);
+        final donacion = registro.buscarPorId(id);
+        expect(donacion, isNotNull);
+        expect(donacion!.estadoDonacion, EstadoDonacion.disponible);
       });
 
-      test('rechaza retirar una donación inexistente', () {
-        final idValido = registro.ingresarDonacion(
+      test('rechaza retirar una donación ya desechada', () {
+        final id = registro.ingresarDonacion(
           tipoSangre: TipoSangre.bNegativo,
           volumenDonado: 450,
-          fechaDeToma: DateTime.now().subtract(const Duration(days: 5)),
+          fechaDeToma: DateTime.now().subtract(const Duration(days: 50)),
           rutDonante: "12345678-5",
         );
-        final cantidadAntes = registro.cantidadDonaciones;
 
-        final resultado = registro.retirarDonacionVencida("9999999");
+        // primer retiro: pasa a desechada
+        registro.retirarDonacionVencida(id);
+
+        // segundo intento: debe rechazarse
+        final resultado = registro.retirarDonacionVencida(id);
 
         expect(resultado.fueExitoso, isFalse);
-        expect(resultado.estado, EstadoRetiro.noEncontrada);
-        expect(resultado.mensaje, contains("No se encontró"));
-        expect(registro.cantidadDonaciones, cantidadAntes);
-        expect(registro.existeDonacion(idValido), isTrue);
+        expect(resultado.estado, EstadoRetiro.yaDesechada);
+        expect(resultado.mensaje, contains("ya se encuentra desechada"));
+        final donacion = registro.buscarPorId(id);
+        expect(donacion, isNotNull);
+        expect(donacion!.estadoDonacion, EstadoDonacion.desechada);
       });
     });
   });

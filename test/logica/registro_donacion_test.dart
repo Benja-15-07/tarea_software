@@ -179,66 +179,158 @@ void main() {
   });
 
   test('Test 4: Evitar colisiones de IDs y preservar la donación anterior', () {
-    // Se prepara una secuencia de IDs que simula una colisión.
-    // El segundo ID generado será igual al primero.
-    final ids = ['1234567', '1234567', '7654321'];
-    int indice = 0;
 
-    // Se crea un registro con un generador de IDs controlado.
-    final registroPrueba = RegistroDonacion(
-      generarId: () {
-        String id = ids[indice];
-        indice++;
-        return id;
-      },
-    );
+  // Se prepara una secuencia de IDs que simula una colisión.
+  // El segundo ID generado será igual al primero.
+  final ids = ['1234567', '1234567', '7654321'];
+  int indice = 0;
 
-    // Se registra la primera donación.
-    final idPrimera = registroPrueba.ingresarDonacion(
-      tipoSangre: TipoSangre.oNegativo,
-      volumenDonado: 450,
-      fechaDeToma: DateTime(2026, 11, 6),
-      rutDonante: "12345678-5",
-    );
+  // Se crea un registro con un generador de IDs controlado.
+  final registroPrueba = RegistroDonacion(
+    generarId: () {
+      String id = ids[indice];
+      indice++;
+      return id;
+    },
+  );
 
-    final donacionPrimeraAntes = registroPrueba.buscarPorId(idPrimera)!;
+  // Se registra la primera donación.
+  final idPrimera = registroPrueba.ingresarDonacion(
+    tipoSangre: TipoSangre.oNegativo,
+    volumenDonado: 450,
+    fechaDeToma: DateTime(2026, 11, 6),
+    rutDonante: "12345678-5",
+  );
 
-    // Se registra la segunda donación.
-    // El generador primero intentará utilizar un ID repetido.
-    final idSegunda = registroPrueba.ingresarDonacion(
-      tipoSangre: TipoSangre.aPositivo,
-      volumenDonado: 450,
-      fechaDeToma: DateTime(2026, 11, 6),
-      rutDonante: "12345678-5",
-    );
+  final donacionPrimeraAntes = registroPrueba.buscarPorId(idPrimera)!;
 
-    // Se comprueba que la primera donación recibió el primer ID.
-    expect(idPrimera, '1234567');
+  // Se registra la segunda donación.
+  // El generador primero intentará utilizar un ID repetido.
+  final idSegunda = registroPrueba.ingresarDonacion(
+    tipoSangre: TipoSangre.aPositivo,
+    volumenDonado: 450,
+    fechaDeToma: DateTime(2026, 11, 6),
+    rutDonante: "12345678-5",
+  );
 
-    // Se comprueba que, ante la colisión, se generó otro ID.
-    expect(idSegunda, '7654321');
-    expect(idSegunda, isNot(idPrimera));
+  // Se comprueba que la primera donación recibió el primer ID.
+  expect(idPrimera, '1234567');
 
-    // Se comprueba que ambas donaciones siguen almacenadas.
-    expect(registroPrueba.cantidadDonaciones, 2);
-    expect(registroPrueba.existeDonacion(idPrimera), isTrue);
-    expect(registroPrueba.existeDonacion(idSegunda), isTrue);
+  // Se comprueba que, ante la colisión, se generó otro ID.
+  expect(idSegunda, '7654321');
+  expect(idSegunda, isNot(idPrimera));
 
-    // Se comprueba que la primera donación no fue reemplazada.
-    final donacionPrimeraDespues = registroPrueba.buscarPorId(idPrimera)!;
+  // Se comprueba que ambas donaciones siguen almacenadas.
+  expect(registroPrueba.cantidadDonaciones, 2);
+  expect(registroPrueba.existeDonacion(idPrimera), isTrue);
+  expect(registroPrueba.existeDonacion(idSegunda), isTrue);
 
-    expect(donacionPrimeraDespues.id, donacionPrimeraAntes.id);
-    expect(donacionPrimeraDespues.tipoSangre, donacionPrimeraAntes.tipoSangre);
-    expect(
-      donacionPrimeraDespues.volumenDonado,
-      donacionPrimeraAntes.volumenDonado,
-    );
-    expect(donacionPrimeraDespues.rutDonante, donacionPrimeraAntes.rutDonante);
+  // Se comprueba que la primera donación no fue reemplazada.
+  final donacionPrimeraDespues = registroPrueba.buscarPorId(idPrimera)!;
 
-    // Se comprueba que la segunda donación se almacenó con sus datos.
-    final donacionSegunda = registroPrueba.buscarPorId(idSegunda)!;
+  expect(donacionPrimeraDespues.id, donacionPrimeraAntes.id);
+  expect(donacionPrimeraDespues.tipoSangre, donacionPrimeraAntes.tipoSangre);
+  expect(donacionPrimeraDespues.volumenDonado, donacionPrimeraAntes.volumenDonado);
+  expect(donacionPrimeraDespues.rutDonante, donacionPrimeraAntes.rutDonante);
 
-    expect(donacionSegunda.tipoSangre, TipoSangre.aPositivo);
-    expect(donacionSegunda.volumenDonado, 450);
+  // Se comprueba que la segunda donación se almacenó con sus datos.
+  final donacionSegunda = registroPrueba.buscarPorId(idSegunda)!;
+
+  expect(donacionSegunda.tipoSangre, TipoSangre.aPositivo);
+  expect(donacionSegunda.volumenDonado, 450);
+});
+
+group('Agrupación y Orden por Caducidad', () {
+    late RegistroDonacion registroT;
+
+    setUp(() {
+      registroT = RegistroDonacion();
+    });
+
+    test('Test 1: Agrupar unidades correctamente', () {
+      registroT.ingresarDonacion(
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 450,
+        fechaDeToma: DateTime(2026, 11, 1),
+        rutDonante: "12345678-5",
+      );
+      registroT.ingresarDonacion(
+        tipoSangre: TipoSangre.aPositivo,
+        volumenDonado: 450,
+        fechaDeToma: DateTime(2026, 11, 2),
+        rutDonante: "87654321-K",
+      );
+      final stockAgrupado = registroT.obtenerStockAgrupadoYOrdenado();
+
+      expect(stockAgrupado[TipoSangre.oPositivo]?.length, 1);
+      expect(stockAgrupado[TipoSangre.aPositivo]?.length, 1);
+      expect(stockAgrupado[TipoSangre.bPositivo]?.length, 0);
+    });
+
+    test('Test 2: Mantener unidades del mismo tipo agrupadas', () {
+      registroT.ingresarDonacion(
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 450,
+        fechaDeToma: DateTime(2026, 11, 1),
+        rutDonante: "12345678-5",
+      );
+      registroT.ingresarDonacion(
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 500,
+        fechaDeToma: DateTime(2026, 11, 2),
+        rutDonante: "87654321-K",
+      );
+
+      final stockAgrupado = registroT.obtenerStockAgrupadoYOrdenado();
+
+      expect(stockAgrupado[TipoSangre.oPositivo]?.length, 2);
+    });
+
+    test('Test 1: Ordenar unidades por caducidad', () {
+      final fechaAntigua = DateTime(2026, 10, 1); 
+      final fechaReciente = DateTime(2026, 11, 5); 
+
+      registroT.ingresarDonacion(
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 450,
+        fechaDeToma: fechaReciente,
+        rutDonante: "12345678-5",
+      );
+      registroT.ingresarDonacion(
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 450,
+        fechaDeToma: fechaAntigua,
+        rutDonante: "87654321-K",
+      );
+
+      final ordenadas = registroT.getDonacionesDisponiblesOrdenadasPorCaducidad();
+
+      expect(ordenadas.length, 2);
+      expect(ordenadas.first.fechaDeToma, fechaAntigua);
+      expect(ordenadas.last.fechaDeToma, fechaReciente);
+    });
+
+    test('Test 2: Ordenar unidades con la misma fecha de caducidad', () {
+      final mismaFecha = DateTime(2026, 10, 1);
+
+      registroT.ingresarDonacion(
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 450,
+        fechaDeToma: mismaFecha,
+        rutDonante: "12345678-5",
+      );
+      registroT.ingresarDonacion(
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 500,
+        fechaDeToma: mismaFecha,
+        rutDonante: "87654321-K",
+      );
+
+      final ordenadas = registroT.getDonacionesDisponiblesOrdenadasPorCaducidad();
+
+      expect(ordenadas.length, 2);
+    });
   });
+
+
 }

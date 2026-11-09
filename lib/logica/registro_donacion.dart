@@ -102,4 +102,35 @@ class RegistroDonacion {
     return actualizado? const ResultadoRetiro(EstadoRetiro.exitoso) : const ResultadoRetiro(EstadoRetiro.yaDesechada);
   }
 
+  // retorna las donaciones disponibles ordenadas por fecha de caducidad 
+
+  List<Donacion> getDonacionesDisponiblesOrdenadasPorCaducidad() {
+    final disponibles = _donaciones.values
+        .where((d) => d.estadoDonacion == EstadoDonacion.disponible)
+        .toList();
+    
+    //la mas proximas a vencer van primero
+    disponibles.sort((a, b) => a.fechaDeCaducidad.compareTo(b.fechaDeCaducidad));
+    return disponibles;
+  }
+  
+
+  //agrupa las unidades por tipo de sangre y aplica el orden por caducidad en cada grupo
+  
+  Map<TipoSangre, List<Donacion>> obtenerStockAgrupadoYOrdenado() {
+    final Map<TipoSangre, List<Donacion>> stockAgrupado = {};
+    
+    //inicializamos todos los tipos de sangre para hacer la agrupacion
+    for (var tipo in TipoSangre.values) {
+      stockAgrupado[tipo] = [];
+    }
+
+    final ordenadas = getDonacionesDisponiblesOrdenadasPorCaducidad();
+    for (var donacion in ordenadas) {
+      stockAgrupado[donacion.tipoSangre]!.add(donacion);
+    }
+
+    return stockAgrupado;
+  }
+
 }

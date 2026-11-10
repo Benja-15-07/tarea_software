@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:proyecto_banco_sangre/logica/enums/estado_donacion.dart';
 import 'package:proyecto_banco_sangre/logica/registro_donacion.dart';
 import 'package:proyecto_banco_sangre/logica/enums/tipo_sangre.dart';
 import 'package:proyecto_banco_sangre/vistas/pantalla_inventario_donaciones.dart';
@@ -61,6 +62,78 @@ void main() {
       expect(find.text('DISPONIBLE'), findsOneWidget);
 
     });
+
+    testWidgets("Muestra todos los datos de una donación vigente", 
+     (tester) async {
+        final id = registro.ingresarDonacion(
+          tipoSangre: TipoSangre.aPositivo, 
+          volumenDonado: 450, 
+          fechaDeToma: DateTime.now(), 
+          rutDonante: "12345678-9"
+        );
+
+        await tester.pumpWidget(crearPantallaPrueba(registro));      
+        await tester.pumpAndSettle();
+        await tester.tap(find.text("Grupo Sanguíneo: A+"));
+        await tester.pumpAndSettle();
+        await tester.tap(find.textContaining("ID: $id"));
+        await tester.pumpAndSettle();
+
+        expect(find.text("Detalle de donación"), findsOneWidget);
+        expect(find.text(id), findsOneWidget);
+        expect(find.descendant(of: find.byType(AlertDialog), matching: find.text("A+")), findsOneWidget);
+        expect(find.text("450 ml"), findsOneWidget);
+        expect(find.text("Fecha de toma:"), findsOneWidget);
+        expect(find.text("Fecha de caducidad:"), findsOneWidget);
+        expect(find.text("Estado:"), findsOneWidget);
+        expect(find.text("disponible"), findsOneWidget);
+        expect(find.text("Vencida"), findsNothing);
+    });
+
+    testWidgets("Muestra advertencia al abrir una donación vencida", 
+     (tester) async {
+        final id = registro.ingresarDonacion(
+          tipoSangre: TipoSangre.aPositivo, 
+          volumenDonado: 450, 
+          fechaDeToma: DateTime.now().subtract(const Duration(days: 60)), 
+          rutDonante: "12345678-9"
+        );
+
+        await tester.pumpWidget(crearPantallaPrueba(registro));      
+        await tester.pumpAndSettle();
+        await tester.tap(find.text("Grupo Sanguíneo: A+"));
+        await tester.pumpAndSettle();
+        await tester.tap(find.textContaining("ID: $id"));
+        await tester.pumpAndSettle();
+
+        expect(find.text("Detalle de donación"), findsOneWidget);
+        expect(find.text(id), findsOneWidget);
+        expect(find.text("450 ml"), findsOneWidget);
+        expect(find.text("Estado:"), findsOneWidget);
+        expect(find.text("Vencida"), findsNWidgets(2));
+    });
+
+    testWidgets("No abre el detalle de una donación desechada", 
+     (tester) async {
+        final id = registro.ingresarDonacion(
+          tipoSangre: TipoSangre.aPositivo, 
+          volumenDonado: 450, 
+          fechaDeToma: DateTime.now(), 
+          rutDonante: "12345678-9"
+        );
+
+        await tester.pumpWidget(crearPantallaPrueba(registro));      
+        await tester.pumpAndSettle();
+        await tester.tap(find.text("Grupo Sanguíneo: A+"));
+        await tester.pumpAndSettle();
+        
+        registro.actualizarEstadoDonacion(id, EstadoDonacion.desechada);
+
+        await tester.tap(find.textContaining("ID: $id"));
+        await tester.pumpAndSettle();
+
+        expect(find.text("Detalle de donación"), findsNothing);      
+        expect(find.text("La donación seleccionada no se encuentra disponible"), findsOneWidget);
+    });
   });
-  
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:proyecto_banco_sangre/logica/donacion.dart'; 
+import 'package:proyecto_banco_sangre/logica/donacion.dart';
+import 'package:proyecto_banco_sangre/logica/enums/estado_donacion.dart'; 
 import 'package:proyecto_banco_sangre/logica/registro_donacion.dart';
 import 'package:proyecto_banco_sangre/logica/enums/tipo_sangre.dart';
 import 'package:proyecto_banco_sangre/vistas/estilo/colores_app.dart';
+import 'package:proyecto_banco_sangre/vistas/pantalla_detalle_donacion.dart';
 
 class PantallaInventarioDonaciones extends StatefulWidget {
   final RegistroDonacion registroDonacion;
@@ -174,6 +176,25 @@ class _PantallaInventarioDonacionesState extends State<PantallaInventarioDonacio
                         backgroundColor: ColoresApp.exito,
                         padding: EdgeInsets.zero,
                       ),
+                      onTap: () {
+                        final donacionActual = widget.registroDonacion.buscarPorId(donacion.id);
+
+                        if(donacionActual == null || donacionActual.estadoDonacion != EstadoDonacion.disponible){
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("La donación seleccionada no se encuentra disponible") ,
+                            ),  
+                          );
+                          return;
+                        }
+
+                        showDialog<void>(
+                          context: context, 
+                          builder: (_) => PantallaDetalleDonacion(
+                            donacion: donacionActual,
+                          ),
+                        );
+                      },
                     );
                   },
                 ),

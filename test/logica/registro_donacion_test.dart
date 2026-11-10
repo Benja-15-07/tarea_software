@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:proyecto_banco_sangre/logica/registro_donacion.dart';
 import 'package:proyecto_banco_sangre/logica/enums/tipo_sangre.dart';
+import 'package:proyecto_banco_sangre/logica/enums/estado_donacion.dart';
 
 void main() {
   group('Pruebas unitarias de RegistroDonacion', () {
@@ -289,15 +290,20 @@ group('Agrupación y Orden por Caducidad', () {
     });
 
     test('test 2: Excluir unidades no disponibles', () {
-      registroT9.ingresarDonacion(
+      final id = registroT9.ingresarDonacion(
         tipoSangre: TipoSangre.oPositivo,
         volumenDonado: 450,
         fechaDeToma: DateTime(2026, 11, 1),
         rutDonante: "12345678-5",
       );
 
+      expect(registroT9.calcularStockPorTipo()[TipoSangre.oPositivo], 1);
+
+      final cambio = registroT9.actualizarEstadoDonacion(id, EstadoDonacion.despachada);
+      expect(cambio, isTrue);
+
       final stock = registroT9.calcularStockPorTipo();
-      expect(stock[TipoSangre.oPositivo], 1);
+      expect(stock[TipoSangre.oPositivo], 0);
     });
 
     test('test 3: Actualizar cantidades del stock', () {

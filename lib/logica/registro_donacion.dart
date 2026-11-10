@@ -127,18 +127,10 @@ class RegistroDonacion{
   //calcula la cantidad de unidades disponibles de cada tipo de sangre
   Map<TipoSangre, int> calcularStockPorTipo() {
     final stockAgrupado = obtenerStockAgrupadoYOrdenado();
-    final Map<TipoSangre, int> stockCalculado = {};
 
-    stockAgrupado.forEach((tipo, donaciones) {
-      //contamos solo las que tienen estado disponible
-      final cantidadDisponibles = donaciones
-          .where((d) => d.estadoDonacion == EstadoDonacion.disponible)
-          .length;
-      
-      stockCalculado[tipo] = cantidadDisponibles;
-    });
-
-    return stockCalculado;
+    return stockAgrupado.map(
+      (tipo, donaciones) => MapEntry(tipo, donaciones.length),
+    );
   }
 
 }

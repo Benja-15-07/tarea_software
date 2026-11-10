@@ -32,12 +32,13 @@ void main() {
       );
     });
 
-    testWidgets('Visualizar inventario y grupos sanguíneos cuando existen unidades', (WidgetTester tester) async {
-       tester.view.physicalSize = const Size(800, 1600);
+    testWidgets('Visualizar inventario y grupos sanguíneos cuando existen unidades', 
+     (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
       // Donación de prueba
-      registro.ingresarDonacion(
+      final id = registro.ingresarDonacion(
         tipoSangre: TipoSangre.oPositivo,
         volumenDonado: 450,
         fechaDeToma: DateTime.now().subtract(const Duration(days: 1)),
@@ -48,9 +49,17 @@ void main() {
       await tester.pumpWidget(crearPantallaPrueba(registro));
       await tester.pumpAndSettle();
 
-       expect(find.text('Grupo Sanguíneo: O+'), findsOneWidget);
-       expect(find.text('Disponibles: 1 unidades'), findsOneWidget);
-       expect(find.text('No hay unidades disponibles'), findsNothing);
+      expect(find.text('Grupo Sanguíneo: O+'), findsOneWidget);
+      expect(find.text('Disponibles: 1 unidades'), findsOneWidget);
+      expect(find.text('No hay unidades disponibles'), findsNothing);
+
+      await tester.tap(find.text('Grupo Sanguíneo: O+'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('ID: $id'), findsOneWidget);
+      expect(find.textContaining('Volumen: 450 ml'), findsOneWidget);
+      expect(find.text('DISPONIBLE'), findsOneWidget);
+
     });
   });
   

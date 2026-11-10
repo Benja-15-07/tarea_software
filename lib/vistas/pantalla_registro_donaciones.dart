@@ -99,9 +99,6 @@ class _PantallaRegistroDonacionesState
     //si el formulario no es valido retorna
     if (!_formularioEsValido) return;
 
-    //obtiene el rut ingresado por el usuario.
-    _rutDonante = _rutDonanteController.text;
-
     //se convierte el campo del volumen donado de string a int
     final volumenDonado = int.parse(
       _volumenDonadoController.text.trim().replaceAll(",", "."),
@@ -113,11 +110,11 @@ class _PantallaRegistroDonacionesState
       tipoSangre: _tipoSangre!,
       volumenDonado: volumenDonado,
       fechaDeToma: _fechaDeToma!,
-      rutDonante: _rutDonante!,
+      rutDonante: _rutDonanteController.text,
     );
 
     _mostrarMensaje(
-      "Donanción registrada exitosamente. ID: $idDonacion",
+      "Donanción registrada exitosamente",
       color: ColoresApp.exito,
     );
 

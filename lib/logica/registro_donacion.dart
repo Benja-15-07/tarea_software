@@ -133,4 +133,18 @@ class RegistroDonacion {
     return stockAgrupado;
   }
 
+  //calcula la cantidad de unidades disponibles de cada tipo de sangre
+  Map<TipoSangre, int> calcularStockPorTipo() {
+    final stockAgrupado = obtenerStockAgrupadoYOrdenado();
+
+    return stockAgrupado.map(
+      (tipo, donaciones) => MapEntry(tipo, donaciones.length),
+    );
+  }
+
 }
+
+
+
+
+

@@ -3,6 +3,7 @@ import 'package:proyecto_banco_sangre/logica/enums/estado_donacion.dart';
 import 'package:proyecto_banco_sangre/logica/registro_donacion.dart';
 import 'package:proyecto_banco_sangre/logica/enums/tipo_sangre.dart';
 import 'package:proyecto_banco_sangre/logica/resultado_retiro.dart';
+import 'package:proyecto_banco_sangre/logica/enums/estado_donacion.dart';
 
 void main() {
   group('Pruebas unitarias de RegistroDonacion', () {
@@ -332,5 +333,75 @@ group('Agrupación y Orden por Caducidad', () {
     });
   });
 
+  group('calculo y actualización de stock por tipo', () {
+    late RegistroDonacion registroT9;
 
+    setUp(() {
+      registroT9 = RegistroDonacion();
+    });
+
+    test('test 1: Calcular stock correctamente', () {
+      registroT9.ingresarDonacion(
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 450,
+        fechaDeToma: DateTime(2026, 11, 1),
+        rutDonante: "12345678-5",
+      );
+      registroT9.ingresarDonacion(
+        tipoSangre: TipoSangre.aPositivo,
+        volumenDonado: 450,
+        fechaDeToma: DateTime(2026, 11, 2),
+        rutDonante: "87654321-K",
+      );
+
+      final stock = registroT9.calcularStockPorTipo();
+
+      expect(stock[TipoSangre.oPositivo], 1);
+      expect(stock[TipoSangre.aPositivo], 1);
+      expect(stock[TipoSangre.bPositivo], 0);
+    });
+
+    test('test 2: Excluir unidades no disponibles', () {
+      final id = registroT9.ingresarDonacion(
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 450,
+        fechaDeToma: DateTime(2026, 11, 1),
+        rutDonante: "12345678-5",
+      );
+
+      expect(registroT9.calcularStockPorTipo()[TipoSangre.oPositivo], 1);
+
+      final cambio = registroT9.actualizarEstadoDonacion(id, EstadoDonacion.despachada);
+      expect(cambio, isTrue);
+
+      final stock = registroT9.calcularStockPorTipo();
+      expect(stock[TipoSangre.oPositivo], 0);
+    });
+
+    test('test 3: Actualizar cantidades del stock', () {
+      registroT9.ingresarDonacion(
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 450,
+        fechaDeToma: DateTime(2026, 11, 1),
+        rutDonante: "12345678-5",
+      );
+
+      var stockAntes = registroT9.calcularStockPorTipo();
+      expect(stockAntes[TipoSangre.oPositivo], 1);
+
+      registroT9.ingresarDonacion(
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 450,
+        fechaDeToma: DateTime(2026, 11, 2),
+        rutDonante: "87654321-K",
+      );
+
+      var stockDespues = registroT9.calcularStockPorTipo();
+      expect(stockDespues[TipoSangre.oPositivo], 2);
+    });
+  });
+
+  
 }
+
+

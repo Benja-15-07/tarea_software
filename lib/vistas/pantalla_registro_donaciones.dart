@@ -2,13 +2,17 @@ import "package:flutter/material.dart";
 import "package:proyecto_banco_sangre/logica/enums/tipo_sangre.dart";
 import "package:proyecto_banco_sangre/logica/donacion.dart";
 import "package:proyecto_banco_sangre/logica/registro_donacion.dart";
+import "package:proyecto_banco_sangre/logica/registro_donantes.dart";
 import "package:proyecto_banco_sangre/vistas/estilo/colores_app.dart";
 import "package:proyecto_banco_sangre/logica/donante.dart";
 
 class PantallaRegistroDonaciones extends StatefulWidget {
   final RegistroDonacion registroDonacion;
+  final RegistroDonantes registroDonantes;
 
-  const PantallaRegistroDonaciones({super.key, required this.registroDonacion});
+  const PantallaRegistroDonaciones({super.key,
+   required this.registroDonacion,required this.registroDonantes,
+   });
 
   @override
   State<PantallaRegistroDonaciones> createState() =>
@@ -39,7 +43,13 @@ class _PantallaRegistroDonacionesState
 
   String? _validarCampoRutDonante(String? valor) {
     try {
-      validarYNormalizarRut(valor ?? "");
+      final rut = validarYNormalizarRut(valor ?? "");
+
+      if (!widget.registroDonantes.existeDonante(rut)) {
+      return "No existe un donante registrado con este RUT.";
+      }
+
+
       return null;
     } on ArgumentError catch (e) {
       return e.message.toString();

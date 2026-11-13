@@ -8,6 +8,7 @@ import 'package:proyecto_banco_sangre/vistas/pantalla_detalle_donacion.dart';
 
 class PantallaInventarioDonaciones extends StatefulWidget {
   final RegistroDonacion registroDonacion;
+  
 
   const PantallaInventarioDonaciones({
     super.key,
@@ -20,6 +21,8 @@ class PantallaInventarioDonaciones extends StatefulWidget {
 }
 
 class _PantallaInventarioDonacionesState extends State<PantallaInventarioDonaciones> {
+  bool _retiroEnProgreso = false;
+
   @override
   Widget build(BuildContext context) {
     //obtenemos los calculos y datos agrupados
@@ -168,13 +171,39 @@ class _PantallaInventarioDonacionesState extends State<PantallaInventarioDonacio
                         "Toma: $fechaTomaStr  •  Caduca: $fechaCadStr",
                         style: const TextStyle(color: ColoresApp.textoSecundario),
                       ),
-                      trailing: Chip(
-                        label: Text(
-                          donacion.estadoDonacion.name.toUpperCase(),
-                          style: const TextStyle(fontSize: 10, color: ColoresApp.textoSobrePrimario),
-                        ),
-                        backgroundColor: ColoresApp.exito,
-                        padding: EdgeInsets.zero,
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Chip(
+                            label: Text(
+                              donacion.estadoDonacion.name.toUpperCase(),
+                              style: const TextStyle(fontSize: 10, color: ColoresApp.textoSobrePrimario),
+                            ),
+                            backgroundColor: ColoresApp.exito,
+                            padding: EdgeInsets.zero,
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            key: Key("boton_desechar_${donacion.id}"),
+                            onPressed: (donacion.estaExpirada() &&
+                                    donacion.estadoDonacion == EstadoDonacion.disponible &&
+                                    !_retiroEnProgreso)
+                                ? () => _ejecutarDesecho(donacion.id)
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: ColoresApp.primario,
+                              foregroundColor: ColoresApp.textoSobrePrimario,
+                              disabledBackgroundColor: ColoresApp.botonDeshabilitadoFondo,
+                              disabledForegroundColor: ColoresApp.botonDeshabilitadoTexto,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              minimumSize: const Size(0, 32),
+                            ),
+                            child: const Text(
+                              "Desechar",
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
                       ),
                       onTap: () {
                         final donacionActual = widget.registroDonacion.buscarPorId(donacion.id);
@@ -203,5 +232,32 @@ class _PantallaInventarioDonacionesState extends State<PantallaInventarioDonacio
         );
       }).toList(),
     );
+  }
+
+  //Ejecuta el retiro y refresca la vista
+  Future<void> _ejecutarDesecho(String id) async {
+    setState(() {
+      _retiroEnProgreso = true;
+    });
+
+    await Future<void>.delayed(Duration.zero);
+
+    final resultado = widget.registroDonacion.retirarDonacionVencida(id);
+
+    if (!mounted) return;
+
+    setState(() {
+      _retiroEnProgreso = false;
+    });
+
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(resultado.mensaje),
+          backgroundColor: resultado.fueExitoso ? ColoresApp.exito : ColoresApp.error,
+          duration: const Duration(seconds: 2),
+        ),
+      );
   }
 }

@@ -27,7 +27,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   Widget build(BuildContext context) {
     final List<Widget> pantallas = [
       PantallaRegistroDonantes(registroDonantes: widget.registroDonantes),
-      PantallaRegistroDonaciones(registroDonacion: widget.registroDonacion),
+      PantallaRegistroDonaciones(registroDonacion: widget.registroDonacion,registroDonantes: widget.registroDonantes),
       PantallaInventarioDonaciones(registroDonacion: widget.registroDonacion),
     ];
 

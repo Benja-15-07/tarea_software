@@ -45,6 +45,7 @@ class _PantallaRegistroDonacionesState
     try {
       final rut = validarYNormalizarRut(valor ?? "");
 
+      //se verifica que el rut del donante sea de un donante registrado
       if (!widget.registroDonantes.existeDonante(rut)) {
       return "No existe un donante registrado con este RUT.";
       }

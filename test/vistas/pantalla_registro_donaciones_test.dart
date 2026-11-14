@@ -2,23 +2,44 @@ import "package:flutter/material.dart";
 import "package:flutter_test/flutter_test.dart";
 
 import "package:proyecto_banco_sangre/logica/registro_donacion.dart";
+import "package:proyecto_banco_sangre/logica/registro_donantes.dart";
 import "package:proyecto_banco_sangre/logica/enums/tipo_sangre.dart";
 import "package:proyecto_banco_sangre/vistas/pantalla_registro_donaciones.dart";
+import "package:proyecto_banco_sangre/logica/donante.dart";
+import "package:proyecto_banco_sangre/logica/enums/estado_elegibilidad.dart";
 
 void main() {
   //late al ser variable que no puede recibir nulos
   late RegistroDonacion registroDonacion;
+  late RegistroDonantes registroDonantes;
 
   setUp(() {
     // se utiliza un id fijo
     registroDonacion = RegistroDonacion(generarId: () => "1234567");
+    registroDonantes = RegistroDonantes();
+
+    // Se registra un donante para utilizarlo en los tests.
+    final donante = Donante(
+      rut: "12345678-5",
+      nombre: "Juan Perez",
+      fechaNacimiento: DateTime(1995, 5, 10),
+      tipoSangre: TipoSangre.values.first,
+      peso: 70,
+      telefono: "912345678",
+      elegibilidad: EstadoElegibilidad.apto,
+    );
+
+    registroDonantes.ingresarDonante(donante);
   });
 
   // se carga la pantalla en un WidgetTester para poder testearla
   Future<void> cargarPantalla(WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        home: PantallaRegistroDonaciones(registroDonacion: registroDonacion),
+        home: PantallaRegistroDonaciones(
+          registroDonacion: registroDonacion,
+          registroDonantes: registroDonantes,
+        ),
       ),
     );
 
@@ -59,7 +80,6 @@ void main() {
   }
 
   group("Tests de PantallaRegistroDonaciones", () {
-
     // TEST 1
     testWidgets("Registrar donación desde la vista exitosamente", (
       WidgetTester tester,
@@ -86,7 +106,6 @@ void main() {
       // se comprueba el mensaje de exito
       expect(find.text("Donanción registrada exitosamente"), findsOneWidget);
     });
-
 
     // TEST 2
     testWidgets("Validar campos obligatorios vacíos en la vista", (
@@ -129,7 +148,6 @@ void main() {
 
       await tester.pumpAndSettle();
 
-
       //boton registrar
       final boton = tester.widget<ElevatedButton>(
         find.byKey(const Key("boton_registrar")),
@@ -141,5 +159,42 @@ void main() {
       // no debe haberse registrado ninguna donacion (estructura vacia)
       expect(registroDonacion.cantidadDonaciones, 0);
     });
+
+    // TEST 4
+    testWidgets("Rechazar RUT de donante no registrado", (
+      WidgetTester tester,
+    ) async {
+
+      // Se utiliza un registro vacío, sin donantes.
+      registroDonantes = RegistroDonantes();
+
+      await cargarPantalla(tester);
+
+      // Se ingresa un RUT válido, pero que no está registrado.
+      await tester.enterText(
+        find.byKey(const Key("campo_rut_donante")),
+        "12345678-5",
+      );
+
+      await tester.pumpAndSettle();
+
+      // Se comprueba que aparezca el mensaje de error.
+      expect(
+        find.text("No existe un donante registrado con este RUT."),
+        findsOneWidget,
+      );
+
+      // Se comprueba que el botón esté deshabilitado.
+      final boton = tester.widget<ElevatedButton>(
+        find.byKey(const Key("boton_registrar")),
+      );
+
+      expect(boton.onPressed, isNull);
+
+      // No debe registrarse ninguna donación.
+      expect(registroDonacion.cantidadDonaciones, 0);
+
+    });
+
   });
 }

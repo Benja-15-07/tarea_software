@@ -10,7 +10,6 @@ void main() {
 
     setUp(() {
       fechaToma = DateTime(2026, 11, 6);
-
       donacion = Donacion(
         id: "1234567",
         tipoSangre: TipoSangre.aPositivo,
@@ -33,9 +32,19 @@ void main() {
       expect(donacion.estadoDonacion, EstadoDonacion.disponible);
     });
 
+    test("normaliza el RUT del donante quitando espacios y pasando K a mayúscula", () {
+      final donacionConK = Donacion(
+        id: "1234569",
+        tipoSangre: TipoSangre.oPositivo,
+        volumenDonado: 450,
+        fechaDeToma: fechaToma,
+        rutDonante: " 16378047-k ",
+      );
+      expect(donacionConK.rutDonante, "16378047-K");
+    });
+
     test("calcula la fecha de caducidad sumando 42 dias", () {
       final fechaCaducidad = Donacion.calcularFechaCaducidad(fechaToma);
-
       expect(fechaCaducidad, DateTime(2026, 12, 18));
     });
 
@@ -106,7 +115,6 @@ void main() {
       expect(donacion.estaExpirada(), isFalse);
     });
 
-
     test("considera expirada una donacion cuya fecha de caducidad ya paso", () {
       final donacionExpirada = Donacion(
         id: "1234568",
@@ -128,8 +136,6 @@ void main() {
       expect(donacion.estadoDonacion, EstadoDonacion.desechada);
     });
 
-  
-
     test("no permite actualizar nuevamente un estado que ya no es disponible", () {
       donacion.actualizarEstado(EstadoDonacion.desechada);
 
@@ -147,7 +153,7 @@ void main() {
         tipoSangre: TipoSangre.oNegativo,
         volumenDonado: 450,
         fechaDeToma: DateTime(2026, 11, 7),
-        rutDonante: "587654321-1",
+        rutDonante: "98765432-5",
       );
 
       expect(donacion, otraDonacion);
@@ -166,10 +172,11 @@ void main() {
       expect(donacion, isNot(otraDonacion));
     });
 
-    test("toString incluye los datos principales de la donacion", () {
+    test("toString incluye los datos principales de la donacion y el rut del donante", () {
       final representacion = donacion.toString();
 
       expect(representacion, contains("1234567"));
+      expect(representacion, contains("12345678-5"));
       expect(representacion, contains("A+"));
       expect(representacion, contains("450"));
       expect(representacion, contains("disponible"));

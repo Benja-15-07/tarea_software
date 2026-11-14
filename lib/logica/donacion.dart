@@ -1,7 +1,7 @@
 import "package:proyecto_banco_sangre/logica/enums/tipo_sangre.dart";
 import "package:proyecto_banco_sangre/logica/enums/estado_donacion.dart";
 
-//Clase que representa una donacion de sangre
+// Clase que representa una donación de sangre
 class Donacion {
   final String id;
   final TipoSangre tipoSangre;
@@ -12,69 +12,80 @@ class Donacion {
   final String rutDonante;
 
   Donacion({
-    required this.id, //id de 7 digitos
+    required this.id, // id de 7 dígitos
     required this.tipoSangre,
     required int volumenDonado,
-    required this.rutDonante,
+    required String rutDonante,
     required DateTime fechaDeToma,
-  }) : estadoDonacion = EstadoDonacion
-           .disponible, //el estado inicial de la donacion es: disponible
+  }) : estadoDonacion = EstadoDonacion.disponible,
+       rutDonante = rutDonante.trim().toUpperCase(),
        fechaDeToma = validarFechaDeToma(fechaDeToma),
-       fechaDeCaducidad = calcularFechaCaducidad(fechaDeToma),
+       fechaDeCaducidad = calcularFechaCaducidad(
+         validarFechaDeToma(fechaDeToma),
+       ),
        volumenDonado = validarVolumen(volumenDonado);
 
-  //calcula la fecha de caducidad como la fecha de toma + 42 dias despues
+  // Calcula la fecha de caducidad como la fecha de toma + 42 días después
   static DateTime calcularFechaCaducidad(DateTime fechaToma) {
-    return fechaToma.add(const Duration(days: 42));
+    final fechaLimpia = DateTime(
+      fechaToma.year,
+      fechaToma.month,
+      fechaToma.day,
+    );
+    return fechaLimpia.add(const Duration(days: 42));
   }
 
-  //Permite actualizar el estado de la donacion de disponible al nuevo
-  //estado dado
+  // Permite actualizar el estado de la donación de disponible al nuevo estado dado
   bool actualizarEstado(EstadoDonacion nuevoEstado) {
-    //si el estado actual es disponible se hace el cambio
     if (estadoDonacion == EstadoDonacion.disponible) {
       estadoDonacion = nuevoEstado;
       return true;
     }
-
-    // si el estado actual es diferente de disponible,
-    // no se permite el cambio y se retorna false.
     return false;
   }
 
-  //devuelve true en caso de que la donacion haya pasado su fecha de
-  //caducidad
+  // Devuelve true en caso de que la donación haya pasado su fecha de caducidad
   bool estaExpirada() {
-    return DateTime.now().isAfter(fechaDeCaducidad);
+    final ahora = DateTime.now();
+    final hoyLimpio = DateTime(ahora.year, ahora.month, ahora.day);
+    final caducidadLimpia = DateTime(
+      fechaDeCaducidad.year,
+      fechaDeCaducidad.month,
+      fechaDeCaducidad.day,
+    );
+    return hoyLimpio.isAfter(caducidadLimpia);
   }
 
-  //Se sobrescribe el operador == para comparar donaciones por su id
+  // Se sobrescribe el operador == para comparar donaciones por su id
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is Donacion && runtimeType == other.runtimeType && id == other.id;
 
-  //se sobrescribe el hashCode para que coincida con la implementacion de ==
+  // Se sobrescribe el hashCode para que coincida con la implementación de ==
   @override
   int get hashCode => id.hashCode;
 
-  //representacion en string de la donacion
+  // Representación en string de la donación
   @override
   String toString() {
-    return "Donacion{id: $id, tipoSangre: ${tipoSangre.etiqueta}, volumenDonado: $volumenDonado, fechaToma: $fechaDeToma, fechaCaducidad: $fechaDeCaducidad, estado: $estadoDonacion}";
+    return "Donacion{id: $id, rutDonante: $rutDonante, tipoSangre: ${tipoSangre.etiqueta}, volumenDonado: $volumenDonado, fechaToma: $fechaDeToma, fechaCaducidad: $fechaDeCaducidad, estado: $estadoDonacion}";
   }
 }
 
-//valida que la fecha de toma no sea posterior a la fecha actual
+// Valida que la fecha de toma no sea posterior a la fecha actual y la normaliza (año, mes, día)
 DateTime validarFechaDeToma(DateTime fecha) {
-  if (fecha.isAfter(DateTime.now())) {
+  final ahora = DateTime.now();
+  final fechaLimpia = DateTime(fecha.year, fecha.month, fecha.day);
+  final hoyLimpio = DateTime(ahora.year, ahora.month, ahora.day);
+
+  if (fechaLimpia.isAfter(hoyLimpio)) {
     throw ArgumentError("la fecha de toma no puede ser futura");
   }
-
-  return fecha;
+  return fechaLimpia;
 }
 
-//valida el volumen donado
+// Valida el volumen donado
 int validarVolumen(int volumen) {
   if (volumen < 400 || volumen > 500) {
     throw ArgumentError("el volumen debe estar en un rango entre 400 y 500 ml");

@@ -1,7 +1,6 @@
 import "package:proyecto_banco_sangre/logica/donacion.dart";
 import "package:proyecto_banco_sangre/logica/enums/estado_donacion.dart";
 import "package:proyecto_banco_sangre/logica/enums/tipo_sangre.dart";
-import "package:proyecto_banco_sangre/logica/registro_donantes.dart";
 import "dart:math";
 import "package:proyecto_banco_sangre/logica/resultado_retiro.dart";
 

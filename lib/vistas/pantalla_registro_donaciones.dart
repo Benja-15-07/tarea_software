@@ -1,18 +1,21 @@
 import "package:flutter/material.dart";
-import "package:proyecto_banco_sangre/logica/enums/tipo_sangre.dart";
 import "package:proyecto_banco_sangre/logica/donacion.dart";
+import "package:proyecto_banco_sangre/logica/donante.dart";
+import "package:proyecto_banco_sangre/logica/enums/estado_elegibilidad.dart";
+import "package:proyecto_banco_sangre/logica/enums/tipo_sangre.dart";
 import "package:proyecto_banco_sangre/logica/registro_donacion.dart";
 import "package:proyecto_banco_sangre/logica/registro_donantes.dart";
 import "package:proyecto_banco_sangre/vistas/estilo/colores_app.dart";
-import "package:proyecto_banco_sangre/logica/donante.dart";
 
 class PantallaRegistroDonaciones extends StatefulWidget {
   final RegistroDonacion registroDonacion;
   final RegistroDonantes registroDonantes;
 
-  const PantallaRegistroDonaciones({super.key,
-   required this.registroDonacion,required this.registroDonantes,
-   });
+  const PantallaRegistroDonaciones({
+    super.key,
+    required this.registroDonacion,
+    required this.registroDonantes,
+  });
 
   @override
   State<PantallaRegistroDonaciones> createState() =>
@@ -29,7 +32,16 @@ class _PantallaRegistroDonacionesState
 
   TipoSangre? _tipoSangre;
   DateTime? _fechaDeToma;
-  String? _rutDonante;
+  Donante? _donanteEncontrado;
+
+  @override
+  void initState() {
+    super.initState();
+    // Inicializar por defecto con la fecha de hoy
+    final hoy = DateTime.now();
+    _fechaDeToma = DateTime(hoy.year, hoy.month, hoy.day);
+    _fechaTomaController.text = _formatearFecha(_fechaDeToma!);
+  }
 
   @override
   void dispose() {
@@ -39,18 +51,41 @@ class _PantallaRegistroDonacionesState
     super.dispose();
   }
 
-  // funciones de validacion
+  String _formatearFecha(DateTime fecha) {
+    final dia = fecha.day.toString().padLeft(2, "0");
+    final mes = fecha.month.toString().padLeft(2, "0");
+    return "$dia/$mes/${fecha.year}";
+  }
 
+  // Búsqueda reactiva del donante al escribir el RUT
+  void _alCambiarRut(String valor) {
+    Donante? encontrado;
+    if (esRutValido(valor)) {
+      encontrado = widget.registroDonantes.buscarPorRut(valor);
+    }
+
+    setState(() {
+      _donanteEncontrado = encontrado;
+      if (encontrado != null) {
+        _tipoSangre = encontrado.tipoSangre;
+      } else {
+        _tipoSangre = null;
+      }
+    });
+  }
+
+  // Funciones de validación
   String? _validarCampoRutDonante(String? valor) {
     try {
       final rut = validarYNormalizarRut(valor ?? "");
+      final donante = widget.registroDonantes.buscarPorRut(rut);
 
-      //se verifica que el rut del donante sea de un donante registrado
-      if (!widget.registroDonantes.existeDonante(rut)) {
-      return "No existe un donante registrado con este RUT.";
+      if (donante == null) {
+        return "No existe un donante registrado con este RUT.";
       }
-
-
+      if (!donante.esApto) {
+        return "El donante no está apto para donar (${donante.elegibilidad.etiqueta}).";
+      }
       return null;
     } on ArgumentError catch (e) {
       return e.message.toString();
@@ -104,45 +139,38 @@ class _PantallaRegistroDonacionesState
       );
   }
 
-  // en caso de ser el formulario valido, guarda la donacion en el map y limpia el formulario
-
+  // En caso de ser el formulario válido, guarda la donación en el map y limpia el formulario
   void _registrarDonacion() {
-    //si el formulario no es valido retorna
     if (!_formularioEsValido) return;
 
-    //se convierte el campo del volumen donado de string a int
+    final rutNormalizado = validarYNormalizarRut(_rutDonanteController.text);
     final volumenDonado = int.parse(
       _volumenDonadoController.text.trim().replaceAll(",", "."),
     );
-
-    //ingresa la donacion al map de donaciones
 
     final idDonacion = widget.registroDonacion.ingresarDonacion(
       tipoSangre: _tipoSangre!,
       volumenDonado: volumenDonado,
       fechaDeToma: _fechaDeToma!,
-      rutDonante: _rutDonanteController.text,
+      rutDonante: rutNormalizado,
     );
 
     _mostrarMensaje(
-      "Donanción registrada exitosamente",
+      "Donación registrada exitosamente (ID: $idDonacion)",
       color: ColoresApp.exito,
     );
-
     _limpiarFormulario();
   }
 
-  // selector de fecha de toma
-
+  // Selector de fecha de toma
   Future<void> _seleccionarFecha(BuildContext context) async {
     final hoy = DateTime.now();
-    final fechaInicial =
-        _fechaDeToma ?? DateTime(hoy.year - 25, hoy.month, hoy.day);
+    final fechaInicial = _fechaDeToma ?? hoy;
 
     final seleccion = await showDatePicker(
       context: context,
       initialDate: fechaInicial,
-      firstDate: DateTime(1900),
+      firstDate: DateTime(2000),
       lastDate: hoy,
       helpText: "Seleccione fecha de toma",
     );
@@ -150,28 +178,30 @@ class _PantallaRegistroDonacionesState
     if (seleccion != null) {
       setState(() {
         _fechaDeToma = seleccion;
-        final dia = seleccion.day.toString().padLeft(2, "0");
-        final mes = seleccion.month.toString().padLeft(2, "0");
-        _fechaTomaController.text = "$dia/$mes/${seleccion.year}";
+        _fechaTomaController.text = _formatearFecha(seleccion);
       });
     }
   }
 
   void _limpiarFormulario() {
+    final hoy = DateTime.now();
     _rutDonanteController.clear();
-    _fechaTomaController.clear();
     _volumenDonadoController.clear();
-
     setState(() {
-      _fechaDeToma = null;
+      _donanteEncontrado = null;
       _tipoSangre = null;
-      _rutDonante = null;
+      _fechaDeToma = DateTime(hoy.year, hoy.month, hoy.day);
+      _fechaTomaController.text = _formatearFecha(_fechaDeToma!);
       _formKey = GlobalKey<FormState>();
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final fechaCaducidadEstimada = _fechaDeToma != null
+        ? Donacion.calcularFechaCaducidad(_fechaDeToma!)
+        : null;
+
     return Scaffold(
       backgroundColor: ColoresApp.fondoPantalla,
       appBar: AppBar(
@@ -224,7 +254,7 @@ class _PantallaRegistroDonacionesState
                       ),
                       const SizedBox(height: 6),
                       const Text(
-                        "Complete todos los datos requeridos para registrar la donacion.",
+                        "Complete todos los datos requeridos para registrar la donación.",
                         style: TextStyle(
                           color: ColoresApp.textoSecundario,
                           fontSize: 13.5,
@@ -232,7 +262,7 @@ class _PantallaRegistroDonacionesState
                       ),
                       const Divider(height: 32, thickness: 1),
 
-                      //Campo RUT Donante
+                      // Campo RUT Donante
                       TextFormField(
                         key: const Key("campo_rut_donante"),
                         controller: _rutDonanteController,
@@ -244,11 +274,48 @@ class _PantallaRegistroDonacionesState
                         ),
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         validator: _validarCampoRutDonante,
-                        onChanged: (_) => setState(() {}),
+                        onChanged: _alCambiarRut,
                       ),
+
+                      // Tarjeta informativa si se encuentra el donante
+                      if (_donanteEncontrado != null) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          key: const Key("tarjeta_info_donante"),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: _donanteEncontrado!.esApto
+                                ? ColoresApp.exito.withValues(alpha: 0.1)
+                                : ColoresApp.error.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                _donanteEncontrado!.esApto
+                                    ? Icons.check_circle_outline
+                                    : Icons.error_outline,
+                                color: _donanteEncontrado!.esApto
+                                    ? ColoresApp.exito
+                                    : ColoresApp.error,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  "Donante: ${_donanteEncontrado!.nombre} | Grupo: ${_donanteEncontrado!.tipoSangre.etiqueta}",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: ColoresApp.textoPrincipal,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 16),
 
-                      //Campo Fecha de toma
+                      // Campo Fecha de toma
                       TextFormField(
                         key: const Key("campo_fecha_toma"),
                         controller: _fechaTomaController,
@@ -256,7 +323,6 @@ class _PantallaRegistroDonacionesState
                         decoration: const InputDecoration(
                           labelText: "Fecha de toma",
                           hintText: "Seleccione en el calendario",
-
                           prefixIcon: Icon(Icons.view_kanban_outlined),
                           suffixIcon: Icon(Icons.calendar_today),
                           border: OutlineInputBorder(),
@@ -265,9 +331,20 @@ class _PantallaRegistroDonacionesState
                         validator: _validarCampoFechaToma,
                         onTap: () => _seleccionarFecha(context),
                       ),
+                      if (fechaCaducidadEstimada != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          "Fecha de caducidad calculada (+42 días): ${_formatearFecha(fechaCaducidadEstimada)}",
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: ColoresApp.textoSecundario,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 16),
 
-                      //Campos Tipo de Sangre y volumen donado
+                      // Campos Tipo de Sangre y Volumen Donado
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -275,7 +352,7 @@ class _PantallaRegistroDonacionesState
                             child: DropdownButtonFormField<TipoSangre>(
                               key: const Key("dropdown_tipo_sangre"),
                               isExpanded: true,
-                              initialValue: _tipoSangre,
+                              value: _tipoSangre,
                               decoration: const InputDecoration(
                                 labelText: "Grupo sanguíneo",
                                 prefixIcon: Icon(Icons.bloodtype_outlined),
@@ -287,11 +364,8 @@ class _PantallaRegistroDonacionesState
                                   child: Text(tipo.etiqueta),
                                 );
                               }).toList(),
-                              onChanged: (valor) {
-                                setState(() {
-                                  _tipoSangre = valor;
-                                });
-                              },
+                              // Bloqueado para edición manual: se asigna automáticamente según el donante
+                              onChanged: null,
                               validator: (valor) =>
                                   valor == null ? "Requerido" : null,
                             ),
@@ -319,9 +393,9 @@ class _PantallaRegistroDonacionesState
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
 
-                      //Botón Registrar
+                      // Botón Registrar
                       SizedBox(
                         height: 48,
                         child: ElevatedButton.icon(
@@ -331,7 +405,7 @@ class _PantallaRegistroDonacionesState
                               : null,
                           icon: const Icon(Icons.save_outlined),
                           label: const Text(
-                            "Registrar Donacion",
+                            "Registrar Donación",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,

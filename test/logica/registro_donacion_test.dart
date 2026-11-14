@@ -3,7 +3,6 @@ import 'package:proyecto_banco_sangre/logica/enums/estado_donacion.dart';
 import 'package:proyecto_banco_sangre/logica/registro_donacion.dart';
 import 'package:proyecto_banco_sangre/logica/enums/tipo_sangre.dart';
 import 'package:proyecto_banco_sangre/logica/resultado_retiro.dart';
-import 'package:proyecto_banco_sangre/logica/enums/estado_donacion.dart';
 
 void main() {
   group('Pruebas unitarias de RegistroDonacion', () {

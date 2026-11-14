@@ -7,13 +7,13 @@ import 'package:proyecto_banco_sangre/vistas/pantalla_registro_donaciones.dart';
 import 'package:proyecto_banco_sangre/vistas/pantalla_registro_donantes.dart';
 
 class PantallaPrincipal extends StatefulWidget {
-  final RegistroDonantes registroDonantes;
-  final RegistroDonacion registroDonacion;
+  final RegistroDonantes? registroDonantes;
+  final RegistroDonacion? registroDonacion;
 
   const PantallaPrincipal({
     super.key,
-    required this.registroDonantes,
-    required this.registroDonacion,
+    this.registroDonantes,
+    this.registroDonacion,
   });
 
   @override
@@ -22,13 +22,26 @@ class PantallaPrincipal extends StatefulWidget {
 
 class _PantallaPrincipalState extends State<PantallaPrincipal> {
   int _indiceActual = 0;
+  late final RegistroDonantes _registroDonantes;
+  late final RegistroDonacion _registroDonacion;
+
+  @override
+  void initState() {
+    super.initState();
+    // Se instancian una sola vez para conservar los datos al navegar entre pestañas
+    _registroDonantes = widget.registroDonantes ?? RegistroDonantes();
+    _registroDonacion = widget.registroDonacion ?? RegistroDonacion();
+  }
 
   @override
   Widget build(BuildContext context) {
     final List<Widget> pantallas = [
-      PantallaRegistroDonantes(registroDonantes: widget.registroDonantes),
-      PantallaRegistroDonaciones(registroDonacion: widget.registroDonacion,registroDonantes: widget.registroDonantes),
-      PantallaInventarioDonaciones(registroDonacion: widget.registroDonacion),
+      PantallaRegistroDonantes(registroDonantes: _registroDonantes),
+      PantallaRegistroDonaciones(
+        registroDonacion: _registroDonacion,
+        registroDonantes: _registroDonantes,
+      ),
+      PantallaInventarioDonaciones(registroDonacion: _registroDonacion),
     ];
 
     return Scaffold(

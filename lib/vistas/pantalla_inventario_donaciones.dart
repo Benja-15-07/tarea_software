@@ -176,10 +176,17 @@ class _PantallaInventarioDonacionesState extends State<PantallaInventarioDonacio
                         children: [
                           Chip(
                             label: Text(
-                              donacion.estadoDonacion.name.toUpperCase(),
-                              style: const TextStyle(fontSize: 10, color: ColoresApp.textoSobrePrimario),
+                              donacion.estaExpirada()
+                                  ? "VENCIDA"
+                                  : donacion.estadoDonacion.name.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: ColoresApp.textoSobrePrimario,
+                              ),
                             ),
-                            backgroundColor: ColoresApp.exito,
+                            backgroundColor: donacion.estaExpirada()
+                                ? ColoresApp.error
+                                : ColoresApp.exito,
                             padding: EdgeInsets.zero,
                           ),
                           const SizedBox(width: 8),

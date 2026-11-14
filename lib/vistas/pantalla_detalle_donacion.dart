@@ -3,18 +3,21 @@ import 'package:proyecto_banco_sangre/logica/donacion.dart';
 import 'package:proyecto_banco_sangre/logica/enums/tipo_sangre.dart';
 import 'package:proyecto_banco_sangre/vistas/estilo/colores_app.dart';
 
-class PantallaDetalleDonacion extends StatelessWidget{
+class PantallaDetalleDonacion extends StatelessWidget {
   final Donacion donacion;
 
   const PantallaDetalleDonacion({
     super.key,
-    required this.donacion
+    required this.donacion,
   });
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("Detalle de donación", textAlign: TextAlign.center,),
+      title: const Text(
+        "Detalle de donación",
+        textAlign: TextAlign.center,
+      ),
       backgroundColor: ColoresApp.fondoPantalla,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -30,9 +33,8 @@ class PantallaDetalleDonacion extends StatelessWidget{
             const Divider(
               color: ColoresApp.primario,
               thickness: 2,
-              
             ),
-            if(donacion.estaExpirada())
+            if (donacion.estaExpirada())
               Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(10),
@@ -59,15 +61,21 @@ class PantallaDetalleDonacion extends StatelessWidget{
                   ],
                 ),
               ),
-            
             _detalleDato("ID:", donacion.id),
+            _detalleDato("RUT donante:", donacion.rutDonante),
             _detalleDato("Tipo de sangre:", donacion.tipoSangre.etiqueta),
             _detalleDato("Volumen donado:", "${donacion.volumenDonado} ml"),
             _detalleDato("Fecha de toma:", _formatoFecha(donacion.fechaDeToma)),
-            _detalleDato("Fecha de caducidad:", _formatoFecha(donacion.fechaDeCaducidad)),
-            _detalleDato("Estado:", donacion.estaExpirada() 
-              ? "Vencida" : donacion.estadoDonacion.name,
-              colorValor: donacion.estaExpirada() ? const Color.fromARGB(255, 255, 94, 0) : null
+            _detalleDato(
+              "Fecha de caducidad:",
+              _formatoFecha(donacion.fechaDeCaducidad),
+            ),
+            _detalleDato(
+              "Estado:",
+              donacion.estaExpirada() ? "Vencida" : donacion.estadoDonacion.name,
+              colorValor: donacion.estaExpirada()
+                  ? const Color.fromARGB(255, 255, 94, 0)
+                  : null,
             ),
           ],
         ),
@@ -75,7 +83,7 @@ class PantallaDetalleDonacion extends StatelessWidget{
     );
   }
 
-  Widget _detalleDato(String etiqueta, String valor, {Color? colorValor}){
+  Widget _detalleDato(String etiqueta, String valor, {Color? colorValor}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -84,9 +92,9 @@ class PantallaDetalleDonacion extends StatelessWidget{
           Expanded(
             child: Text(
               etiqueta,
-              style: const TextStyle(
-                color: ColoresApp.textoPrincipal),
-            )),
+              style: const TextStyle(color: ColoresApp.textoPrincipal),
+            ),
+          ),
           Text(
             valor,
             style: TextStyle(
@@ -99,10 +107,9 @@ class PantallaDetalleDonacion extends StatelessWidget{
     );
   }
 
-  String _formatoFecha(DateTime fecha){
-    int dia = fecha.day;
-    int mes = fecha.month;
-    int year = fecha.year;
-    return "$dia/$mes/$year";
+  String _formatoFecha(DateTime fecha) {
+    final dia = fecha.day.toString().padLeft(2, '0');
+    final mes = fecha.month.toString().padLeft(2, '0');
+    return "$dia/$mes/${fecha.year}";
   }
 }

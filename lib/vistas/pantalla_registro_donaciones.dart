@@ -352,7 +352,7 @@ class _PantallaRegistroDonacionesState
                             child: DropdownButtonFormField<TipoSangre>(
                               key: const Key("dropdown_tipo_sangre"),
                               isExpanded: true,
-                              value: _tipoSangre,
+                              initialValue: _tipoSangre,
                               decoration: const InputDecoration(
                                 labelText: "Grupo sanguíneo",
                                 prefixIcon: Icon(Icons.bloodtype_outlined),

@@ -10,6 +10,7 @@ class Donacion {
   final DateTime fechaDeCaducidad;
   EstadoDonacion estadoDonacion;
   final String rutDonante;
+  DateTime fechaActualizacionEstado;
 
   Donacion({
     required this.id, // id de 7 dígitos
@@ -17,13 +18,15 @@ class Donacion {
     required int volumenDonado,
     required String rutDonante,
     required DateTime fechaDeToma,
+    DateTime? fechaActualizacionEstado,
   }) : estadoDonacion = EstadoDonacion.disponible,
        rutDonante = rutDonante.trim().toUpperCase(),
        fechaDeToma = validarFechaDeToma(fechaDeToma),
        fechaDeCaducidad = calcularFechaCaducidad(
          validarFechaDeToma(fechaDeToma),
        ),
-       volumenDonado = validarVolumen(volumenDonado);
+       volumenDonado = validarVolumen(volumenDonado),
+       fechaActualizacionEstado = fechaActualizacionEstado ?? validarFechaDeToma(fechaDeToma);
 
   // Calcula la fecha de caducidad como la fecha de toma + 42 días después
   static DateTime calcularFechaCaducidad(DateTime fechaToma) {
@@ -37,8 +40,9 @@ class Donacion {
 
   // Permite actualizar el estado de la donación de disponible al nuevo estado dado
   bool actualizarEstado(EstadoDonacion nuevoEstado) {
-    if (estadoDonacion == EstadoDonacion.disponible) {
+    if (estadoDonacion == EstadoDonacion.disponible && nuevoEstado != EstadoDonacion.disponible) {
       estadoDonacion = nuevoEstado;
+      fechaActualizacionEstado = DateTime.now();
       return true;
     }
     return false;
@@ -69,7 +73,7 @@ class Donacion {
   // Representación en string de la donación
   @override
   String toString() {
-    return "Donacion{id: $id, rutDonante: $rutDonante, tipoSangre: ${tipoSangre.etiqueta}, volumenDonado: $volumenDonado, fechaToma: $fechaDeToma, fechaCaducidad: $fechaDeCaducidad, estado: $estadoDonacion}";
+    return "Donacion{id: $id, rutDonante: $rutDonante, tipoSangre: ${tipoSangre.etiqueta}, volumenDonado: $volumenDonado, fechaToma: $fechaDeToma, fechaCaducidad: $fechaDeCaducidad, estado: $estadoDonacion, fechaActualizacionEstado: $fechaActualizacionEstado}";
   }
 }
 

@@ -421,4 +421,52 @@ void main() {
       expect(stockDespues[TipoSangre.oPositivo], 2);
     });
   });
+
+  group("Historial y actualizacion de estado", (){
+    late RegistroDonacion reg;
+
+    String crear() => reg.ingresarDonacion(
+      tipoSangre: TipoSangre.aNegativo, 
+      volumenDonado: 500, 
+      fechaDeToma: DateTime(2026,11,1), 
+      rutDonante: "12345678-5");
+    
+    setUp(() => reg = RegistroDonacion());
+
+    test("actualiza estado y fecha conservando datos", (){
+      final id = crear();
+      final antes = DateTime.now();
+
+      expect(reg.actualizarEstadoDonacion(id, EstadoDonacion.despachada), isTrue);
+
+      final d = reg.buscarPorId(id)!;
+
+      expect(d.estadoDonacion, EstadoDonacion.despachada); 
+      expect(d.volumenDonado, 500); 
+      expect(d.fechaActualizacionEstado.compareTo(antes) >= 0, isTrue); 
+    });
+
+    test("ignora actualizacion de donación inexistente", () {
+      final id = crear();
+
+      expect(reg.actualizarEstadoDonacion("111111111111", EstadoDonacion.desechada), isFalse);
+      expect(reg.buscarPorId(id)!.estadoDonacion, EstadoDonacion.disponible);
+    });
+
+    test("devuelve historial completo con todos los estados", () {
+      final ids = [crear(), crear(), crear()];
+      reg.actualizarEstadoDonacion(ids[1], EstadoDonacion.despachada);
+      reg.actualizarEstadoDonacion(ids[2], EstadoDonacion.desechada);
+
+      expect(reg.donaciones.map((d) => (d.id, d.estadoDonacion)), containsAll([
+        (ids[0], EstadoDonacion.disponible),
+        (ids[1], EstadoDonacion.despachada),
+        (ids[2], EstadoDonacion.desechada)
+      ]));
+    });
+
+    test("devuelve lista vacía si no hay registros", () {
+      expect(reg.donaciones, isEmpty);
+    });
+  });
 }

@@ -5,6 +5,7 @@ import 'package:proyecto_banco_sangre/vistas/estilo/colores_app.dart';
 import 'package:proyecto_banco_sangre/vistas/pantalla_inventario_donaciones.dart';
 import 'package:proyecto_banco_sangre/vistas/pantalla_registro_donaciones.dart';
 import 'package:proyecto_banco_sangre/vistas/pantalla_registro_donantes.dart';
+import 'package:proyecto_banco_sangre/vistas/pantalla_solicitudes_despacho.dart';
 
 class PantallaPrincipal extends StatefulWidget {
   final RegistroDonantes? registroDonantes;
@@ -42,6 +43,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
         registroDonantes: _registroDonantes,
       ),
       PantallaInventarioDonaciones(registroDonacion: _registroDonacion),
+      PantallaSolicitudesDespacho()
     ];
 
     return Scaffold(
@@ -70,6 +72,10 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           BottomNavigationBarItem(
             icon: Icon(Icons.inventory_2_outlined),
             label: 'Inventario',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.inventory_2_outlined),
+            label: 'Solicitudes despacho',
           ),
         ],
       ),

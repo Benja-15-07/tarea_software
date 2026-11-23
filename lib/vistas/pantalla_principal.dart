@@ -74,7 +74,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
             label: 'Inventario',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.inventory_2_outlined),
+            icon: Icon(Icons.description,),
             label: 'Solicitudes despacho',
           ),
         ],

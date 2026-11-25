@@ -43,7 +43,10 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
         registroDonantes: _registroDonantes,
       ),
       PantallaInventarioDonaciones(registroDonacion: _registroDonacion),
-      PantallaSolicitudesDespacho()
+
+      //TODO: quitar el comentado cuando se tenga la interfaz de registrar 
+      //solicitud en pantalla principal
+      //PantallaSolicitudesDespacho()
     ];
 
     return Scaffold(
@@ -73,10 +76,15 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
             icon: Icon(Icons.inventory_2_outlined),
             label: 'Inventario',
           ),
+
+          //TODO: quitar cuando este instanciada la interfaz de registrar solicitud
+          /*
           BottomNavigationBarItem(
             icon: Icon(Icons.description,),
             label: 'Solicitudes despacho',
           ),
+          */
+
         ],
       ),
     );

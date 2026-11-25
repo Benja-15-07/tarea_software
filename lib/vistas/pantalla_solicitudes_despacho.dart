@@ -1,9 +1,19 @@
-
 import 'package:flutter/material.dart';
+import 'package:proyecto_banco_sangre/logica/enums/estado_solicitud.dart';
 import 'package:proyecto_banco_sangre/vistas/estilo/colores_app.dart';
+import 'package:proyecto_banco_sangre/logica/registro_solicitud_despacho.dart';
+import 'package:proyecto_banco_sangre/logica/solicitud_despacho.dart';
+import 'package:proyecto_banco_sangre/logica/enums/tipo_despacho.dart';
 
 class PantallaSolicitudesDespacho extends StatefulWidget {
-  const PantallaSolicitudesDespacho({super.key});
+  //el mapa con las solicitudes de despacho
+  final Map<String, SolicitudDespacho> solicitudesDespacho;
+
+  //se obtiene el mapa de solicitudes de despacho por el constructor
+  const PantallaSolicitudesDespacho({
+    super.key,
+    required this.solicitudesDespacho,
+  });
 
   @override
   State<PantallaSolicitudesDespacho> createState() =>
@@ -12,35 +22,6 @@ class PantallaSolicitudesDespacho extends StatefulWidget {
 
 class _PantallaSolicitudesDespachoState
     extends State<PantallaSolicitudesDespacho> {
-
-  //placeholders de las tarjetas
-  final List<Map<String, String>> solicitudesUrgentes = [
-    {
-      'id': '001',
-      'fecha': '23/11/2026',
-      'tipo': 'O+',
-      'volumen': '450 ml',
-      'estado': 'Pendiente',
-    },
-    {
-      'id': '002',
-      'fecha': '23/11/2026',
-      'tipo': 'A-',
-      'volumen': '300 ml',
-      'estado': 'Pendiente',
-    },
-  ];
-
-  final List<Map<String, String>> solicitudesNormales = [
-    {
-      'id': '003',
-      'fecha': '23/11/2026',
-      'tipo': 'B+',
-      'volumen': '350 ml',
-      'estado': 'Pendiente',
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,13 +40,14 @@ class _PantallaSolicitudesDespachoState
 
         child: ListView(
           children: [
-
             // categoria despacho urgente
             _construirCategoria(
               titulo: "Despacho urgente",
               subtitulo: "Solicitudes que requieren atención urgente",
               icono: Icons.priority_high,
-              solicitudes: solicitudesUrgentes,
+
+              //se obtiene y asigna el map de solicitudes urgentes
+              solicitudes: obtenerSolicitudesPorTipo(TipoDespacho.urgente),
             ),
 
             const SizedBox(height: 16),
@@ -75,7 +57,9 @@ class _PantallaSolicitudesDespachoState
               titulo: "Despacho normal",
               subtitulo: "Solicitudes de despacho normal",
               icono: Icons.local_shipping_outlined,
-              solicitudes: solicitudesNormales,
+
+              //se obtiene y asigna el map de solicitudes urgentes
+              solicitudes: obtenerSolicitudesPorTipo(TipoDespacho.normal),
             ),
           ],
         ),
@@ -83,21 +67,19 @@ class _PantallaSolicitudesDespachoState
     );
   }
 
-  //tarjeta desplegable, la cual al cliquearse muestra las solicitudes 
+  //tarjeta desplegable, la cual al cliquearse muestra las solicitudes
   //(urgentes o normales)
   Widget _construirCategoria({
     required String titulo,
     required String subtitulo,
     required IconData icono,
-    required List<Map<String, String>> solicitudes,
+    required Map<String, SolicitudDespacho> solicitudes,
   }) {
     return Card(
       elevation: 2,
       margin: EdgeInsets.zero,
       color: ColoresApp.superficieTarjeta,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
 
       child: ExpansionTile(
         leading: CircleAvatar(
@@ -116,9 +98,7 @@ class _PantallaSolicitudesDespachoState
 
         subtitle: Text(
           "$subtitulo · ${solicitudes.length} solicitudes",
-          style: const TextStyle(
-            color: ColoresApp.textoSecundario,
-          ),
+          style: const TextStyle(color: ColoresApp.textoSecundario),
         ),
 
         children: [
@@ -129,13 +109,11 @@ class _PantallaSolicitudesDespachoState
               padding: EdgeInsets.all(16),
               child: Text(
                 "No hay solicitudes de despacho.",
-                style: TextStyle(
-                  color: ColoresApp.textoSecundario,
-                ),
+                style: TextStyle(color: ColoresApp.textoSecundario),
               ),
             )
           else
-            ...solicitudes.map(
+            ...solicitudes.values.map(
               (solicitud) => _construirTarjetaSolicitud(solicitud),
             ),
         ],
@@ -143,16 +121,11 @@ class _PantallaSolicitudesDespachoState
     );
   }
 
-  //el widget de la solicitud 
-  Widget _construirTarjetaSolicitud(
-    Map<String, String> solicitud,
-  ) {
+  //el widget de la solicitud
+  Widget _construirTarjetaSolicitud(SolicitudDespacho solicitud) {
     return Card(
       elevation: 1,
-      margin: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 8,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       color: ColoresApp.superficieTarjeta,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -163,7 +136,7 @@ class _PantallaSolicitudesDespachoState
 
       child: ListTile(
         title: Text(
-          "Solicitud #${solicitud['id']}",
+          "Solicitud #${solicitud.id}",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             color: ColoresApp.textoPrincipal,
@@ -175,16 +148,15 @@ class _PantallaSolicitudesDespachoState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Fecha: ${solicitud['fecha']}"),
-              Text("Grupo sanguíneo: ${solicitud['tipo']}"),
-              Text("Volumen solicitado: ${solicitud['volumen']}"),
+              Text("Fecha: ${solicitud.fechaSolicitud}"),
+              Text("Grupo sanguíneo: ${solicitud.tipoDespacho}"),
             ],
           ),
         ),
 
         trailing: Chip(
           label: Text(
-            solicitud['estado']!,
+            solicitud.estadoSolicitud.etiqueta!,
             style: const TextStyle(
               fontSize: 10,
               color: ColoresApp.textoSobrePrimario,
@@ -195,5 +167,38 @@ class _PantallaSolicitudesDespachoState
         ),
       ),
     );
+  }
+
+  //se toma el map de solicitudesDespacho dado al constructor y se retorna
+  //un hashmap con solo las solicitudes del tipo dado por parametro
+  Map<String, SolicitudDespacho> obtenerSolicitudesPorTipo(TipoDespacho tipo) {
+    final Map<String, SolicitudDespacho> solicitudes = {};
+
+    //si el tipo de la solicitud es el tipo dado por parametro, la solicitud
+    //se añade al nuevo map
+    for (var solicitud in widget.solicitudesDespacho.values) {
+      if (solicitud.tipoDespacho == tipo) {
+        solicitudes[solicitud.id] = solicitud;
+      }
+    }
+
+    //se convierten las solicitudes del map en una lista.
+    final listaSolicitudes = solicitudes.values.toList();
+
+    //se ordenan las solicitudes por fechaSolicitud, estando las mas 
+    //antiguas primero
+    listaSolicitudes.sort(
+      (a, b) => a.fechaSolicitud.compareTo(b.fechaSolicitud),
+    );
+
+    //se reconstruye el map respetando el orden de la lista
+    final Map<String, SolicitudDespacho> solicitudesOrdenadas = {};
+
+    for (var solicitud in listaSolicitudes) {
+      solicitudesOrdenadas[solicitud.id] = solicitud;
+    }
+
+    return solicitudesOrdenadas;
+
   }
 }

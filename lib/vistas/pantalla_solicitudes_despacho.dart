@@ -108,7 +108,7 @@ class _PantallaSolicitudesDespachoState
             const Padding(
               padding: EdgeInsets.all(16),
               child: Text(
-                "No hay solicitudes de despacho.",
+                "No hay solicitudes de despacho pendientes",
                 style: TextStyle(color: ColoresApp.textoSecundario),
               ),
             )
@@ -149,7 +149,6 @@ class _PantallaSolicitudesDespachoState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text("Fecha: ${solicitud.fechaSolicitud}"),
-              Text("Grupo sanguíneo: ${solicitud.tipoDespacho}"),
             ],
           ),
         ),
@@ -177,7 +176,8 @@ class _PantallaSolicitudesDespachoState
     //si el tipo de la solicitud es el tipo dado por parametro, la solicitud
     //se añade al nuevo map
     for (var solicitud in widget.solicitudesDespacho.values) {
-      if (solicitud.tipoDespacho == tipo) {
+      if (solicitud.tipoDespacho == tipo && 
+      solicitud.estadoSolicitud == EstadoSolicitud.pendiente) {
         solicitudes[solicitud.id] = solicitud;
       }
     }

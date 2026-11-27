@@ -5,10 +5,12 @@ import "package:proyecto_banco_sangre/vistas/estilo/colores_app.dart";
 
 class PantallaInicioSesion extends StatefulWidget {
   final RegistroUsuarios registroUsuarios;
+  final void Function(Rol rol)? onLoginExitoso;
 
   const PantallaInicioSesion({
     super.key,
     required this.registroUsuarios,
+    this.onLoginExitoso,
   });
 
   @override
@@ -79,7 +81,8 @@ class _PantallaInicioSesionState extends State<PantallaInicioSesion> {
       "Inicio de sesión exitoso. Rol: ${rol.etiqueta}",
       color: ColoresApp.exito,
     );
-    // La redirección según rol se implementa en T04.
+
+    widget.onLoginExitoso?.call(rol);
   }
 
   @override

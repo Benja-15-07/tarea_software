@@ -52,6 +52,11 @@ void main() {
         find.text('Aún no hay donaciones registradas en el historial.'),
         findsOneWidget,
       );
+
+      // 5. Toca la pestaña 'Solicitudes'
+      await tester.tap(find.text('Solicitudes'));
+      await tester.pumpAndSettle();
+expect(find.text('Solicitud de Despacho'), findsOneWidget);
     });
 
    testWidgets('Refleja en el inventario las donaciones registradas', (

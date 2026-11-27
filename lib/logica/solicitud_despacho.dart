@@ -36,7 +36,8 @@ class SolicitudDespacho {
   // Permite actualizar el estado de la solicitud de pendiente a aceptada
   bool actualizarEstado(EstadoSolicitud nuevoEstado) {
     if (_estadoSolicitud == EstadoSolicitud.pendiente &&
-        nuevoEstado == EstadoSolicitud.aceptada) {
+        (nuevoEstado == EstadoSolicitud.aceptada ||
+            nuevoEstado == EstadoSolicitud.despachada)) {
       _estadoSolicitud = nuevoEstado;
       return true;
     }

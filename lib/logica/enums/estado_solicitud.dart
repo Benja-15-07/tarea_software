@@ -1,6 +1,7 @@
 enum EstadoSolicitud {
   pendiente,
   aceptada,
+  despachada,
 }
 
 extension EstadoSolicitudExtension on EstadoSolicitud {
@@ -10,6 +11,8 @@ extension EstadoSolicitudExtension on EstadoSolicitud {
         return 'Pendiente';
       case EstadoSolicitud.aceptada:
         return 'Aceptada';
+      case EstadoSolicitud.despachada:
+        return 'Despachada';
     }
   }
 }

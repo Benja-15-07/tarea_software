@@ -6,6 +6,7 @@ import 'package:proyecto_banco_sangre/logica/registro_usuarios.dart';
 import 'package:proyecto_banco_sangre/logica/usuario.dart';
 import 'package:proyecto_banco_sangre/vistas/estilo/colores_app.dart';
 import 'package:proyecto_banco_sangre/vistas/pantalla_inicio_sesion.dart';
+import 'package:proyecto_banco_sangre/vistas/pantalla_historial_donaciones.dart';
 import 'package:proyecto_banco_sangre/vistas/pantalla_inventario_donaciones.dart';
 import 'package:proyecto_banco_sangre/vistas/pantalla_registro_donaciones.dart';
 import 'package:proyecto_banco_sangre/vistas/pantalla_registro_donantes.dart';
@@ -53,13 +54,14 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> pantallas = [
-      PantallaRegistroDonantes(registroDonantes: _registroDonantes),
-      PantallaRegistroDonaciones(
+      PantallaRegistroDonantes(registroDonantes: _registroDonantes),    
+      PantallaRegistroDonaciones(                                     
         registroDonacion: _registroDonacion,
         registroDonantes: _registroDonantes,
       ),
       PantallaInventarioDonaciones(registroDonacion: _registroDonacion),
       PantallaInicioSesion(registroUsuarios: _registroUsuarios),
+      PantallaHistorialDonaciones(registroDonacion: _registroDonacion),  
     ];
 
     return Scaffold(
@@ -92,6 +94,10 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           BottomNavigationBarItem(
             icon: Icon(Icons.login),
             label: 'Login',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'Historial',
           ),
         ],
       ),

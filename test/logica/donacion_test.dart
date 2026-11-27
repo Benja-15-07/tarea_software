@@ -30,6 +30,9 @@ void main() {
         fechaToma.add(const Duration(days: 42)),
       );
       expect(donacion.estadoDonacion, EstadoDonacion.disponible);
+       expect(donacion.fechaActualizacionEstado.
+       difference(DateTime.now()).inSeconds.abs(),lessThan(5),
+      );
     });
 
     test("normaliza el RUT del donante quitando espacios y pasando K a mayúscula", () {
@@ -127,13 +130,15 @@ void main() {
       expect(donacionExpirada.estaExpirada(), isTrue);
     });
 
-    test("permite actualizar el estado cuando esta disponible", () {
+    test("permite actualizar el estado cuando esta disponible y registra la fecha", () {
+      final antesDeActualizar = DateTime.now();
       final actualizado = donacion.actualizarEstado(
         EstadoDonacion.desechada,
       );
 
       expect(actualizado, isTrue);
       expect(donacion.estadoDonacion, EstadoDonacion.desechada);
+      expect(donacion.fechaActualizacionEstado.compareTo(antesDeActualizar) >= 0, isTrue);
     });
 
     test("no permite actualizar nuevamente un estado que ya no es disponible", () {
@@ -145,6 +150,15 @@ void main() {
 
       expect(actualizado, isFalse);
       expect(donacion.estadoDonacion, EstadoDonacion.desechada);
+    });
+
+    test("no permite actualizar el estado de disponible a disponible", (){
+      final fechaInicial = donacion.fechaActualizacionEstado;
+      final actualizado = donacion.actualizarEstado(EstadoDonacion.disponible);
+
+      expect(actualizado, isFalse);
+      expect(donacion.estadoDonacion, EstadoDonacion.disponible);
+      expect(donacion.fechaActualizacionEstado, fechaInicial);
     });
 
     test("dos donaciones con el mismo id son iguales", () {

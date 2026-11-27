@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:proyecto_banco_sangre/logica/enums/rol.dart';
 import 'package:proyecto_banco_sangre/logica/registro_donacion.dart';
 import 'package:proyecto_banco_sangre/logica/registro_donantes.dart';
+import 'package:proyecto_banco_sangre/logica/registro_usuarios.dart';
+import 'package:proyecto_banco_sangre/logica/usuario.dart';
 import 'package:proyecto_banco_sangre/logica/registro_solicitud_despacho.dart';
 import 'package:proyecto_banco_sangre/vistas/estilo/colores_app.dart';
+import 'package:proyecto_banco_sangre/vistas/pantalla_inicio_sesion.dart';
+import 'package:proyecto_banco_sangre/vistas/pantalla_historial_donaciones.dart';
 import 'package:proyecto_banco_sangre/vistas/pantalla_inventario_donaciones.dart';
 import 'package:proyecto_banco_sangre/vistas/pantalla_registro_donaciones.dart';
 import 'package:proyecto_banco_sangre/vistas/pantalla_registro_donantes.dart';
@@ -11,12 +16,14 @@ import 'package:proyecto_banco_sangre/vistas/pantalla_solicitud_despacho.dart';
 class PantallaPrincipal extends StatefulWidget {
   final RegistroDonantes? registroDonantes;
   final RegistroDonacion? registroDonacion;
+  final RegistroUsuarios? registroUsuarios;
   final RegistroSolicitudDespacho? registroSolicitudDespacho;
 
   const PantallaPrincipal({
     super.key,
     this.registroDonantes,
     this.registroDonacion,
+    this.registroUsuarios,
     this.registroSolicitudDespacho,
   });
 
@@ -28,6 +35,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   int _indiceActual = 0;
   late final RegistroDonantes _registroDonantes;
   late final RegistroDonacion _registroDonacion;
+  late final RegistroUsuarios _registroUsuarios;
   late final RegistroSolicitudDespacho _registroSolicitudDespacho;
 
   @override
@@ -36,6 +44,16 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     // Se instancian una sola vez para conservar los datos al navegar entre pestañas
     _registroDonantes = widget.registroDonantes ?? RegistroDonantes();
     _registroDonacion = widget.registroDonacion ?? RegistroDonacion();
+    _registroUsuarios = widget.registroUsuarios ?? RegistroUsuarios();
+
+    // Usuario de prueba para poder iniciar sesión desde la app
+    _registroUsuarios.ingresarUsuario(
+      Usuario(
+        usuario: "juan",
+        contrasena: "secreto123",
+        rol: Rol.gestorInventario,
+      ),
+    );
     _registroSolicitudDespacho =
         widget.registroSolicitudDespacho ??
         RegistroSolicitudDespacho(registroDonacion: _registroDonacion);
@@ -44,12 +62,14 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> pantallas = [
-      PantallaRegistroDonantes(registroDonantes: _registroDonantes),
-      PantallaRegistroDonaciones(
+      PantallaRegistroDonantes(registroDonantes: _registroDonantes),    
+      PantallaRegistroDonaciones(                                     
         registroDonacion: _registroDonacion,
         registroDonantes: _registroDonantes,
       ),
       PantallaInventarioDonaciones(registroDonacion: _registroDonacion),
+      PantallaInicioSesion(registroUsuarios: _registroUsuarios),
+      PantallaHistorialDonaciones(registroDonacion: _registroDonacion),  
       PantallaSolicitudDespacho(
         registroSolicitudDespacho: _registroSolicitudDespacho,
       ),
@@ -81,6 +101,14 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           BottomNavigationBarItem(
             icon: Icon(Icons.inventory_2_outlined),
             label: 'Inventario',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.login),
+            label: 'Login',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'Historial',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.local_shipping_outlined),

@@ -43,6 +43,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Inventario de Banco de Sangre'), findsOneWidget);
       expect(find.text('No hay unidades disponibles'), findsOneWidget);
+
+      // 4. Toca la pestaña 'Solicitudes'
+      await tester.tap(find.text('Solicitudes'));
+      await tester.pumpAndSettle();
+expect(find.text('Solicitud de Despacho'), findsOneWidget);
     });
 
    testWidgets('Refleja en el inventario las donaciones registradas', (

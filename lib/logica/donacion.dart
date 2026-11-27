@@ -26,7 +26,7 @@ class Donacion {
          validarFechaDeToma(fechaDeToma),
        ),
        volumenDonado = validarVolumen(volumenDonado),
-       fechaActualizacionEstado = fechaActualizacionEstado ?? validarFechaDeToma(fechaDeToma);
+       fechaActualizacionEstado = fechaActualizacionEstado ?? DateTime.now();
 
   // Calcula la fecha de caducidad como la fecha de toma + 42 días después
   static DateTime calcularFechaCaducidad(DateTime fechaToma) {

@@ -97,7 +97,7 @@ void main() {
       expect(find.text("Fecha de toma:"), findsOneWidget);
       expect(find.text("Fecha de caducidad:"), findsOneWidget);
       expect(find.text("Estado:"), findsOneWidget);
-      expect(find.text("disponible"), findsOneWidget);
+      expect(find.text("Disponible"), findsOneWidget);
       expect(find.text("Vencida"), findsNothing);
     });
 

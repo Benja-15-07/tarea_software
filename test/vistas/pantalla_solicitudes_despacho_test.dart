@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -7,9 +6,10 @@ import 'package:proyecto_banco_sangre/logica/solicitud_despacho.dart';
 import 'package:proyecto_banco_sangre/logica/enums/estado_solicitud.dart';
 import 'package:proyecto_banco_sangre/logica/enums/tipo_despacho.dart';
 import 'package:proyecto_banco_sangre/logica/enums/tipo_sangre.dart';
+import 'package:proyecto_banco_sangre/logica/registro_solicitud_despacho.dart';
+import 'package:proyecto_banco_sangre/logica/registro_donacion.dart';
 
 void main() {
-
   //tipo de sangre utilizado para construir las solicitudes de prueba
   final tipoSangre = TipoSangre.values.first;
 
@@ -22,13 +22,9 @@ void main() {
   }) {
     final solicitud = SolicitudDespacho(
       id: id,
-      unidadesSolicitadas: {
-        tipoSangre: 1,
-      },
+      unidadesSolicitadas: {tipoSangre: 1},
       tipoDespacho: tipo,
-      stockDisponible: {
-        tipoSangre: 10,
-      },
+      stockDisponible: {tipoSangre: 10},
       fechaSolicitud: fecha,
     );
 
@@ -41,13 +37,33 @@ void main() {
     return solicitud;
   }
 
+  RegistroSolicitudDespacho crearRegistroSolicitudes() {
+    final registroDonacion = RegistroDonacion();
+
+    // Agregar una donación para disponer de stock.
+    registroDonacion.ingresarDonacion(
+      tipoSangre: tipoSangre,
+      volumenDonado: 450,
+      fechaDeToma: DateTime(2026, 11, 15),
+      rutDonante: 'RUT_VALIDO',
+    );
+
+    final ids = ['SOL-001', 'SOL-002', 'SOL-003', 'SOL-004'];
+    int indice = 0;
+
+    return RegistroSolicitudDespacho(
+      registroDonacion: registroDonacion,
+      generarId: () => ids[indice++],
+    );
+  }
+
   // Construye la pantalla que será utilizada en los tests.
   Widget construirPantalla(
-    Map<String, SolicitudDespacho> solicitudes,
+    RegistroSolicitudDespacho registroSolicitudDespacho,
   ) {
     return MaterialApp(
       home: PantallaSolicitudesDespacho(
-        solicitudesDespacho: solicitudes,
+        registroSolicitudDespacho: registroSolicitudDespacho,
       ),
     );
   }
@@ -62,184 +78,159 @@ void main() {
   }
 
   group('PantallaSolicitudesDespacho', () {
-
     // TEST 1:
     // Visualizar listado de solicitudes de despacho pendientes
-    testWidgets(
-      'Muestra las solicitudes pendientes ordenadas por fecha',
-      (WidgetTester tester) async {
+    testWidgets('Muestra las solicitudes pendientes ordenadas por fecha', (
+      WidgetTester tester,
+    ) async {
+      final registro = crearRegistroSolicitudes();
 
-        final solicitudes = {
-          'SOL-001': crearSolicitud(
-            id: 'SOL-001',
-            fecha: DateTime(2026, 11, 20),
-            tipo: TipoDespacho.urgente,
-          ),
+      registro.ingresarSolicitud(
+        unidadesSolicitadas: {tipoSangre: 1},
+        tipoDespacho: TipoDespacho.urgente,
+        fechaSolicitud: DateTime(2026, 11, 20),
+      );
 
-          'SOL-002': crearSolicitud(
-            id: 'SOL-002',
-            fecha: DateTime(2026, 11, 18),
-            tipo: TipoDespacho.urgente,
-          ),
+      registro.ingresarSolicitud(
+        unidadesSolicitadas: {tipoSangre: 1},
+        tipoDespacho: TipoDespacho.urgente,
+        fechaSolicitud: DateTime(2026, 11, 18),
+      );
 
-          'SOL-003': crearSolicitud(
-            id: 'SOL-003',
-            fecha: DateTime(2026, 11, 22),
-            tipo: TipoDespacho.urgente,
-          ),
+      registro.ingresarSolicitud(
+        unidadesSolicitadas: {tipoSangre: 1},
+        tipoDespacho: TipoDespacho.urgente,
+        fechaSolicitud: DateTime(2026, 11, 22),
+      );
 
-          'SOL-004': crearSolicitud(
-            id: 'SOL-004',
-            fecha: DateTime(2026, 11, 19),
-            tipo: TipoDespacho.normal,
-          ),
-        };
+      registro.ingresarSolicitud(
+        unidadesSolicitadas: {tipoSangre: 1},
+        tipoDespacho: TipoDespacho.normal,
+        fechaSolicitud: DateTime(2026, 11, 19),
+      );
 
-        await tester.pumpWidget(construirPantalla(solicitudes));
+      await tester.pumpWidget(construirPantalla(registro));
 
-        await expandirCategorias(tester);
+      await expandirCategorias(tester);
 
-        // Comprobar que se muestran todas las solicitudes.
-        expect(find.text('Solicitud #SOL-001'), findsOneWidget);
-        expect(find.text('Solicitud #SOL-002'), findsOneWidget);
-        expect(find.text('Solicitud #SOL-003'), findsOneWidget);
-        expect(find.text('Solicitud #SOL-004'), findsOneWidget);
+      // Comprobar que se muestran todas las solicitudes.
+      expect(find.text('Solicitud #SOL-001'), findsOneWidget);
+      expect(find.text('Solicitud #SOL-002'), findsOneWidget);
+      expect(find.text('Solicitud #SOL-003'), findsOneWidget);
+      expect(find.text('Solicitud #SOL-004'), findsOneWidget);
 
-        // Comprobar que se muestran las fechas.
-        expect(
-          find.textContaining('2026-11-20'),
-          findsOneWidget,
-        );
+      // Comprobar que se muestran las fechas.
+      expect(find.textContaining('2026-11-20'), findsOneWidget);
 
-        expect(
-          find.textContaining('2026-11-18'),
-          findsOneWidget,
-        );
+      expect(find.textContaining('2026-11-18'), findsOneWidget);
 
-        expect(
-          find.textContaining('2026-11-22'),
-          findsOneWidget,
-        );
+      expect(find.textContaining('2026-11-22'), findsOneWidget);
 
-        expect(
-          find.textContaining('2026-11-19'),
-          findsOneWidget,
-        );
+      expect(find.textContaining('2026-11-19'), findsOneWidget);
 
-        // Comprobar el orden cronológico de las solicitudes urgentes.
-        // La solicitud más antigua debe aparecer primero.
+      // Comprobar el orden cronológico de las solicitudes urgentes.
+      // La solicitud más antigua debe aparecer primero.
 
-        final posicionSOL002 = tester.getTopLeft(
-          find.text('Solicitud #SOL-002'),
-        ).dy;
+      final posicionSOL002 = tester
+          .getTopLeft(find.text('Solicitud #SOL-002'))
+          .dy;
 
-        final posicionSOL001 = tester.getTopLeft(
-          find.text('Solicitud #SOL-001'),
-        ).dy;
+      final posicionSOL001 = tester
+          .getTopLeft(find.text('Solicitud #SOL-001'))
+          .dy;
 
-        final posicionSOL003 = tester.getTopLeft(
-          find.text('Solicitud #SOL-003'),
-        ).dy;
+      final posicionSOL003 = tester
+          .getTopLeft(find.text('Solicitud #SOL-003'))
+          .dy;
 
-        expect(
-          posicionSOL002,
-          lessThan(posicionSOL001),
-        );
+      expect(posicionSOL002, lessThan(posicionSOL001));
 
-        expect(
-          posicionSOL001,
-          lessThan(posicionSOL003),
-        );
-      },
-    );
-
+      expect(posicionSOL001, lessThan(posicionSOL003));
+    });
 
     // TEST 2:
     // Visualizar listado vacio cuando no existen solicitudes pendientes
-    testWidgets(
-      'Muestra un mensaje cuando no existen solicitudes pendientes',
-      (WidgetTester tester) async {
+    testWidgets('Muestra un mensaje cuando no existen solicitudes pendientes', (
+      WidgetTester tester,
+    ) async {
+      final registro = crearRegistroSolicitudes();
 
-        final solicitudes = {
-          'SOL-001': crearSolicitud(
-            id: 'SOL-001',
-            fecha: DateTime(2026, 11, 20),
-            tipo: TipoDespacho.urgente,
-            aceptada: true,
-          ),
+      registro.ingresarSolicitud(
+        unidadesSolicitadas: {tipoSangre: 1},
+        tipoDespacho: TipoDespacho.urgente,
+        fechaSolicitud: DateTime(2026, 11, 20),
+      );
 
-          'SOL-002': crearSolicitud(
-            id: 'SOL-002',
-            fecha: DateTime(2026, 11, 21),
-            tipo: TipoDespacho.normal,
-            aceptada: true,
-          ),
-        };
+      registro.ingresarSolicitud(
+        unidadesSolicitadas: {tipoSangre: 1},
+        tipoDespacho: TipoDespacho.normal,
+        fechaSolicitud: DateTime(2026, 11, 21),
+      );
 
-        await tester.pumpWidget(construirPantalla(solicitudes));
+      registro.actualizarEstadoSolicitud('SOL-001', EstadoSolicitud.aceptada);
+      registro.actualizarEstadoSolicitud('SOL-002', EstadoSolicitud.aceptada);
 
-        await expandirCategorias(tester);
+      await tester.pumpWidget(construirPantalla(registro));
 
-        // Comprobar que no se muestran solicitudes.
-        expect(find.text('Solicitud #SOL-001'), findsNothing);
-        expect(find.text('Solicitud #SOL-002'), findsNothing);
+      await expandirCategorias(tester);
 
-        // Comprobar que se muestra el mensaje informativo.
-        expect(
-          find.text('No hay solicitudes de despacho pendientes'),
-          findsNWidgets(2),
-        );
-      },
-    );
+      // Comprobar que no se muestran solicitudes.
+      expect(find.text('Solicitud #SOL-001'), findsNothing);
+      expect(find.text('Solicitud #SOL-002'), findsNothing);
 
+      // Comprobar que se muestra el mensaje informativo.
+      expect(
+        find.text('No hay solicitudes de despacho pendientes'),
+        findsNWidgets(2),
+      );
+    });
 
     // TEST 3:
     // No mostrar solicitudes con estados distintos de pendiente
-    testWidgets(
-      'Muestra únicamente las solicitudes pendientes',
-      (WidgetTester tester) async {
+    testWidgets('Muestra únicamente las solicitudes pendientes', (
+      WidgetTester tester,
+    ) async {
+      final registro = crearRegistroSolicitudes();
 
-        final solicitudes = {
-          'SOL-001': crearSolicitud(
-            id: 'SOL-001',
-            fecha: DateTime(2026, 11, 18),
-            tipo: TipoDespacho.urgente,
-          ),
+      registro.ingresarSolicitud(
+        unidadesSolicitadas: {tipoSangre: 1},
+        tipoDespacho: TipoDespacho.urgente,
+        fechaSolicitud: DateTime(2026, 11, 18),
+      );
 
-          'SOL-002': crearSolicitud(
-            id: 'SOL-002',
-            fecha: DateTime(2026, 11, 19),
-            tipo: TipoDespacho.normal,
-            aceptada: true,
-          ),
+      registro.ingresarSolicitud(
+        unidadesSolicitadas: {tipoSangre: 1},
+        tipoDespacho: TipoDespacho.normal,
+        fechaSolicitud: DateTime(2026, 11, 19),
+      );
 
-          'SOL-003': crearSolicitud(
-            id: 'SOL-003',
-            fecha: DateTime(2026, 11, 20),
-            tipo: TipoDespacho.urgente,
-          ),
+      registro.ingresarSolicitud(
+        unidadesSolicitadas: {tipoSangre: 1},
+        tipoDespacho: TipoDespacho.urgente,
+        fechaSolicitud: DateTime(2026, 11, 20),
+      );
 
-          'SOL-004': crearSolicitud(
-            id: 'SOL-004',
-            fecha: DateTime(2026, 11, 21),
-            tipo: TipoDespacho.normal,
-            aceptada: true,
-          ),
-        };
+      registro.ingresarSolicitud(
+        unidadesSolicitadas: {tipoSangre: 1},
+        tipoDespacho: TipoDespacho.normal,
+        fechaSolicitud: DateTime(2026, 11, 21),
+      );
 
-        await tester.pumpWidget(construirPantalla(solicitudes));
+      // Se actualizan los estados de las solicitudes aceptadas.
+      registro.actualizarEstadoSolicitud('SOL-002', EstadoSolicitud.aceptada);
+      registro.actualizarEstadoSolicitud('SOL-004', EstadoSolicitud.aceptada);
 
-        await expandirCategorias(tester);
+      await tester.pumpWidget(construirPantalla(registro));
 
-        // Las solicitudes pendientes deben aparecer.
-        expect(find.text('Solicitud #SOL-001'), findsOneWidget);
-        expect(find.text('Solicitud #SOL-003'), findsOneWidget);
+      await expandirCategorias(tester);
 
-        // Las solicitudes aceptadas no deben aparecer.
-        expect(find.text('Solicitud #SOL-002'), findsNothing);
-        expect(find.text('Solicitud #SOL-004'), findsNothing);
-      },
-    );
+      // Las solicitudes pendientes deben aparecer.
+      expect(find.text('Solicitud #SOL-001'), findsOneWidget);
+      expect(find.text('Solicitud #SOL-003'), findsOneWidget);
 
+      // Las solicitudes aceptadas no deben aparecer.
+      expect(find.text('Solicitud #SOL-002'), findsNothing);
+      expect(find.text('Solicitud #SOL-004'), findsNothing);
+    });
   });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proyecto_banco_sangre/logica/donacion.dart';
+import 'package:proyecto_banco_sangre/logica/enums/estado_donacion.dart';
 import 'package:proyecto_banco_sangre/logica/enums/tipo_sangre.dart';
 import 'package:proyecto_banco_sangre/vistas/estilo/colores_app.dart';
 
@@ -34,7 +35,7 @@ class PantallaDetalleDonacion extends StatelessWidget {
               color: ColoresApp.primario,
               thickness: 2,
             ),
-            if (donacion.estaExpirada())
+            if (donacion.estaExpirada() && donacion.estadoDonacion == EstadoDonacion.disponible)
               Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(10),
@@ -72,8 +73,10 @@ class PantallaDetalleDonacion extends StatelessWidget {
             ),
             _detalleDato(
               "Estado:",
-              donacion.estaExpirada() ? "Vencida" : donacion.estadoDonacion.name,
-              colorValor: donacion.estaExpirada()
+              (donacion.estaExpirada() && donacion.estadoDonacion == EstadoDonacion.disponible) 
+              ? "Vencida" : 
+              "${donacion.estadoDonacion.name[0].toUpperCase()}${donacion.estadoDonacion.name.substring(1)}",
+              colorValor: (donacion.estaExpirada() && donacion.estadoDonacion == EstadoDonacion.disponible)
                   ? const Color.fromARGB(255, 255, 94, 0)
                   : null,
             ),

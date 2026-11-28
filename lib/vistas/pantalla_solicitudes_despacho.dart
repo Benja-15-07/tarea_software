@@ -6,13 +6,13 @@ import 'package:proyecto_banco_sangre/logica/solicitud_despacho.dart';
 import 'package:proyecto_banco_sangre/logica/enums/tipo_despacho.dart';
 
 class PantallaSolicitudesDespacho extends StatefulWidget {
-  //el mapa con las solicitudes de despacho
-  final Map<String, SolicitudDespacho> solicitudesDespacho;
+  //la clase son las solicitudes
+  final RegistroSolicitudDespacho registroSolicitudDespacho;
 
-  //se obtiene el mapa de solicitudes de despacho por el constructor
+  //se obtiene la clase con las solicitudes de despacho por el constructor
   const PantallaSolicitudesDespacho({
     super.key,
-    required this.solicitudesDespacho,
+    required this.registroSolicitudDespacho,
   });
 
   @override
@@ -175,7 +175,7 @@ class _PantallaSolicitudesDespachoState
 
     //si el tipo de la solicitud es el tipo dado por parametro, la solicitud
     //se añade al nuevo map
-    for (var solicitud in widget.solicitudesDespacho.values) {
+    for (var solicitud in widget.registroSolicitudDespacho.solicitudes) {
       if (solicitud.tipoDespacho == tipo && 
       solicitud.estadoSolicitud == EstadoSolicitud.pendiente) {
         solicitudes[solicitud.id] = solicitud;

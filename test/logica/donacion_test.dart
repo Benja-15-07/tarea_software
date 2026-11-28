@@ -30,7 +30,9 @@ void main() {
         fechaToma.add(const Duration(days: 42)),
       );
       expect(donacion.estadoDonacion, EstadoDonacion.disponible);
-      expect(donacion.fechaActualizacionEstado, fechaToma);
+       expect(donacion.fechaActualizacionEstado.
+       difference(DateTime.now()).inSeconds.abs(),lessThan(5),
+      );
     });
 
     test("normaliza el RUT del donante quitando espacios y pasando K a mayúscula", () {

@@ -8,6 +8,7 @@ import 'package:proyecto_banco_sangre/logica/enums/tipo_despacho.dart';
 import 'package:proyecto_banco_sangre/logica/enums/tipo_sangre.dart';
 import 'package:proyecto_banco_sangre/logica/registro_solicitud_despacho.dart';
 import 'package:proyecto_banco_sangre/logica/registro_donacion.dart';
+import 'package:proyecto_banco_sangre/logica/registro_despacho.dart';
 
 void main() {
   //tipo de sangre utilizado para construir las solicitudes de prueba
@@ -60,10 +61,12 @@ void main() {
   // Construye la pantalla que será utilizada en los tests.
   Widget construirPantalla(
     RegistroSolicitudDespacho registroSolicitudDespacho,
+    RegistroDespacho registroDespacho,
   ) {
     return MaterialApp(
       home: PantallaSolicitudesDespacho(
         registroSolicitudDespacho: registroSolicitudDespacho,
+        registroDespacho: registroDespacho,
       ),
     );
   }
@@ -84,6 +87,11 @@ void main() {
       WidgetTester tester,
     ) async {
       final registro = crearRegistroSolicitudes();
+      final registroDespacho = RegistroDespacho(
+        registroDonacion: RegistroDonacion(),
+      );
+
+      await tester.pumpWidget(construirPantalla(registro, registroDespacho));
 
       registro.ingresarSolicitud(
         unidadesSolicitadas: {tipoSangre: 1},
@@ -109,7 +117,7 @@ void main() {
         fechaSolicitud: DateTime(2026, 11, 19),
       );
 
-      await tester.pumpWidget(construirPantalla(registro));
+      await tester.pumpWidget(construirPantalla(registro, registroDespacho));
 
       await expandirCategorias(tester);
 
@@ -154,6 +162,11 @@ void main() {
       WidgetTester tester,
     ) async {
       final registro = crearRegistroSolicitudes();
+      final registroDespacho = RegistroDespacho(
+        registroDonacion: RegistroDonacion(),
+      );
+
+      await tester.pumpWidget(construirPantalla(registro, registroDespacho));
 
       registro.ingresarSolicitud(
         unidadesSolicitadas: {tipoSangre: 1},
@@ -170,7 +183,7 @@ void main() {
       registro.actualizarEstadoSolicitud('SOL-001', EstadoSolicitud.aceptada);
       registro.actualizarEstadoSolicitud('SOL-002', EstadoSolicitud.aceptada);
 
-      await tester.pumpWidget(construirPantalla(registro));
+      await tester.pumpWidget(construirPantalla(registro, registroDespacho));
 
       await expandirCategorias(tester);
 
@@ -191,6 +204,11 @@ void main() {
       WidgetTester tester,
     ) async {
       final registro = crearRegistroSolicitudes();
+      final registroDespacho = RegistroDespacho(
+        registroDonacion: RegistroDonacion(),
+      );
+
+      await tester.pumpWidget(construirPantalla(registro, registroDespacho));
 
       registro.ingresarSolicitud(
         unidadesSolicitadas: {tipoSangre: 1},
@@ -220,7 +238,7 @@ void main() {
       registro.actualizarEstadoSolicitud('SOL-002', EstadoSolicitud.aceptada);
       registro.actualizarEstadoSolicitud('SOL-004', EstadoSolicitud.aceptada);
 
-      await tester.pumpWidget(construirPantalla(registro));
+      await tester.pumpWidget(construirPantalla(registro, registroDespacho));
 
       await expandirCategorias(tester);
 

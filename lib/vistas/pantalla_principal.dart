@@ -13,6 +13,7 @@ import 'package:proyecto_banco_sangre/vistas/pantalla_registro_donaciones.dart';
 import 'package:proyecto_banco_sangre/vistas/pantalla_registro_donantes.dart';
 import 'package:proyecto_banco_sangre/vistas/pantalla_solicitud_despacho.dart';
 import 'package:proyecto_banco_sangre/vistas/pantalla_solicitudes_despacho.dart';
+import 'package:proyecto_banco_sangre/logica/registro_despacho.dart';
 
 class PantallaPrincipal extends StatefulWidget {
   final RegistroDonantes? registroDonantes;
@@ -38,6 +39,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   late final RegistroDonacion _registroDonacion;
   late final RegistroUsuarios _registroUsuarios;
   late final RegistroSolicitudDespacho _registroSolicitudDespacho;
+  late final RegistroDespacho _registroDespacho;
 
   @override
   void initState() {
@@ -46,6 +48,9 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     _registroDonantes = widget.registroDonantes ?? RegistroDonantes();
     _registroDonacion = widget.registroDonacion ?? RegistroDonacion();
     _registroUsuarios = widget.registroUsuarios ?? RegistroUsuarios();
+
+    //se inicializa registroDespacho
+    _registroDespacho = RegistroDespacho(registroDonacion: _registroDonacion);
 
     // Usuario de prueba para poder iniciar sesión desde la app
     _registroUsuarios.ingresarUsuario(
@@ -75,9 +80,9 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
         registroSolicitudDespacho: _registroSolicitudDespacho,
       ),
 
-      //TODO: añadir correctamente
       PantallaSolicitudesDespacho(
         registroSolicitudDespacho: _registroSolicitudDespacho,
+        registroDespacho: _registroDespacho,
       ),
     ];
 
@@ -117,8 +122,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
             icon: Icon(Icons.local_shipping_outlined),
             label: 'Solicitudes',
           ),
-
-          //TODO: quitar cuando este instanciada la interfaz de registrar solicitud
           BottomNavigationBarItem(
             icon: Icon(Icons.description),
             label: 'Solicitudes despacho',

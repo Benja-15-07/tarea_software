@@ -4,15 +4,19 @@ import 'package:proyecto_banco_sangre/vistas/estilo/colores_app.dart';
 import 'package:proyecto_banco_sangre/logica/registro_solicitud_despacho.dart';
 import 'package:proyecto_banco_sangre/logica/solicitud_despacho.dart';
 import 'package:proyecto_banco_sangre/logica/enums/tipo_despacho.dart';
+import 'package:proyecto_banco_sangre/vistas/pantalla_generar_despacho.dart';
+import 'package:proyecto_banco_sangre/logica/registro_despacho.dart';
 
 class PantallaSolicitudesDespacho extends StatefulWidget {
   //la clase son las solicitudes
   final RegistroSolicitudDespacho registroSolicitudDespacho;
+  final RegistroDespacho registroDespacho;
 
   //se obtiene la clase con las solicitudes de despacho por el constructor
   const PantallaSolicitudesDespacho({
     super.key,
     required this.registroSolicitudDespacho,
+    required this.registroDespacho,
   });
 
   @override
@@ -147,9 +151,7 @@ class _PantallaSolicitudesDespachoState
           padding: const EdgeInsets.only(top: 6),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Fecha: ${solicitud.fechaSolicitud}"),
-            ],
+            children: [Text("Fecha: ${solicitud.fechaSolicitud}")],
           ),
         ),
 
@@ -164,6 +166,24 @@ class _PantallaSolicitudesDespachoState
           backgroundColor: ColoresApp.primario,
           padding: EdgeInsets.zero,
         ),
+
+        //al seleccionar la solicitud, se abre la pantalla de generar despacho
+        onTap: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => PantallaGenerarDespacho(
+                solicitud: solicitud,
+                registroDespacho: widget.registroDespacho,
+              ),
+            ),
+          );
+
+          if (mounted) {
+            setState(() {});
+          }
+        },
+        
       ),
     );
   }
@@ -176,8 +196,8 @@ class _PantallaSolicitudesDespachoState
     //si el tipo de la solicitud es el tipo dado por parametro, la solicitud
     //se añade al nuevo map
     for (var solicitud in widget.registroSolicitudDespacho.solicitudes) {
-      if (solicitud.tipoDespacho == tipo && 
-      solicitud.estadoSolicitud == EstadoSolicitud.pendiente) {
+      if (solicitud.tipoDespacho == tipo &&
+          solicitud.estadoSolicitud == EstadoSolicitud.pendiente) {
         solicitudes[solicitud.id] = solicitud;
       }
     }
@@ -185,7 +205,7 @@ class _PantallaSolicitudesDespachoState
     //se convierten las solicitudes del map en una lista.
     final listaSolicitudes = solicitudes.values.toList();
 
-    //se ordenan las solicitudes por fechaSolicitud, estando las mas 
+    //se ordenan las solicitudes por fechaSolicitud, estando las mas
     //antiguas primero
     listaSolicitudes.sort(
       (a, b) => a.fechaSolicitud.compareTo(b.fechaSolicitud),
@@ -199,6 +219,5 @@ class _PantallaSolicitudesDespachoState
     }
 
     return solicitudesOrdenadas;
-
   }
 }
